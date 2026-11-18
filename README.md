@@ -1,6 +1,17 @@
-# NOMAIA
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/logo/nomaia-anime-sombre.svg">
+    <img src="docs/logo/nomaia-anime-clair.svg" alt="NOMAIA" width="420">
+  </picture>
+</h1>
 
-**NOyau d'organisation et Moteur d'Assistance Intelligent et Augmenté.**
+<p align="center"><strong>NOyau d'organisation et Moteur d'Assistance Intelligent et Augmenté.</strong></p>
+
+Le logo raconte l'application : le **o** est l'anneau d'avancement de la
+journée, le premier **a** le plan du jour, le point du **i** l'assistant qui
+vous signale quelque chose, le dernier **a** la tâche faite. Dans l'interface,
+l'anneau affiche l'avancement réel du jour et le point du i respire quand une
+notification attend. Source du logo : [tools/logo.py](tools/logo.py).
 
 Assistant personnel de tâches, auto-hébergé et piloté par un LLM. NOMAIA
 reçoit ce que vous lui déposez (texte, capture d'écran, mail, message vocal

@@ -120,24 +120,35 @@ a { color: var(--accent-text); }
   text-decoration: none;
 }
 
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  flex: none;
-  border-radius: 10px;
-  background: #22d3ee;
-  color: #04131a;
-  font-weight: 800;
-  font-size: 15px;
+/* Logo genere par tools/logo.py (templates/_logo.html). Les lettres prennent
+   la couleur du texte ; l'anneau du « o » montre l'avancement du jour (--p,
+   pose par shell.js) ; le point du « i » respire quand une notification attend. */
+.logo { display: block; height: 34px; width: auto; overflow: visible; }
+.logo-mark { height: 30px; width: 30px; }
+.logo .logo-ink,
+.logo .logo-track,
+.logo .logo-ring,
+.logo .logo-detail { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.logo .logo-ink { stroke: currentColor; stroke-width: 19; }
+.logo .logo-track { stroke: var(--logo-track); stroke-width: 19; }
+.logo .logo-detail { stroke-width: 7; }
+.logo .logo-dot { fill: #22d3ee; }
+.logo .logo-ring {
+  stroke-width: 19;
+  stroke-dasharray: var(--p, 72) 100;
+  transition: stroke-dasharray 0.6s var(--ease-out), opacity 0.2s;
 }
+/* Barre laterale : l'anneau part de zero et se remplit a la premiere lecture. */
+.brand-live { --p: 0; }
+.brand-live.is-empty .logo-ring { opacity: 0; }
+.brand-live.is-bump .logo-mark,
+.brand-live.is-bump .logo .o { animation: anneau-bump 0.45s var(--ease-spring); transform-box: fill-box; transform-origin: center; }
+@keyframes anneau-bump { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.18); } }
 
-.brand-name {
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.1em;
-}
+/* Point du « i » : halo qui respire tant qu'une notification attend. */
+.brand-live.is-alert .logo-dot { animation: point-alerte 1.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.brand-live.is-alert.is-danger .logo-dot { fill: var(--p1-text, #f87171); }
+@keyframes point-alerte { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.35); opacity: 0.55; } }
 
 .side-group { display: flex; flex-direction: column; gap: 2px; }
 

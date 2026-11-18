@@ -128,6 +128,22 @@ class CloCheEtBarreLateraleTest(NomaiaTestCase):
         if soon[:10] == today:
             self.assertTrue(any(t.startswith("Point client dans") for t in textes))
 
+    def test_logo_vivant_dans_la_coquille(self):
+        html = self.client().get("/plan").get_data(as_text=True)
+        # Logo de la barre laterale et anneau de la barre du haut, chacun avec
+        # son propre degrade : deux identifiants distincts dans la page.
+        self.assertEqual(html.count('class="brand brand-live"'), 2)
+        self.assertIn('id="logo-side-g"', html)
+        self.assertIn('id="logo-top-g"', html)
+        self.assertIn('class="o logo-ring"', html)
+        self.assertIn('class="i logo-dot"', html)
+        self.assertNotIn('class="brand-mark"', html)
+
+    def test_page_d_acces_porte_le_logo_complet(self):
+        html = self.app.test_client().get("/plan").get_data(as_text=True)
+        self.assertIn('class="access-logo"', html)
+        self.assertIn('class="check logo-detail"', html)
+
     def test_barre_laterale_porte_le_nom_et_l_interrupteur(self):
         from models import setting
 

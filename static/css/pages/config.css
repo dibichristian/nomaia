@@ -13,7 +13,8 @@
   text-align: center;
 }
 
-.access-box .brand-mark { margin: 0 auto 18px; width: 46px; height: 46px; font-size: 22px; }
+.access-box .access-logo { margin: 0 auto 22px; color: var(--text); --p: 72; }
+.access-box .access-logo .logo { height: 54px; margin: 0 auto; }
 
 .access-box h1 {
   font-family: var(--font-display);
