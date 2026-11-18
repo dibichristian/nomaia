@@ -1,0 +1,181 @@
+{% extends "layout.html" %}
+{% set page_styles = ["agenda"] %}
+
+{% block title %}NOMAIA — Agenda{% endblock %}
+
+{% block header_date %}<span id="header-date" data-today="{{ today }}"></span>{% endblock %}
+
+{% block content %}
+  <header class="page-head agenda-head">
+    <div>
+      <p class="page-kicker" id="ag-range" aria-live="polite">—</p>
+      <h1 class="page-title">Agenda</h1>
+    </div>
+
+    <div class="page-actions">
+      <div class="ag-nav" role="group" aria-label="Changer de semaine">
+        <button type="button" class="icon-btn" id="ag-prev" title="Semaine précédente" aria-label="Semaine précédente">◀</button>
+        <button type="button" class="btn-ghost" id="ag-today">Aujourd'hui</button>
+        <button type="button" class="icon-btn" id="ag-next" title="Semaine suivante" aria-label="Semaine suivante">▶</button>
+      </div>
+      <button type="button" class="btn-primary" id="ag-new">Nouvel événement</button>
+    </div>
+  </header>
+
+  <div class="agenda-legend" aria-label="Légende">
+    <span class="legend-item ev-meeting"><i></i>Réunion</span>
+    <span class="legend-item ev-focus"><i></i>Créneau bloqué</span>
+    <span class="legend-item ev-absence"><i></i>Absence</span>
+    <span class="legend-item ev-personal"><i></i>Personnel</span>
+    <span class="legend-item legend-off"><i></i>Jour de repos</span>
+  </div>
+
+  <p class="error-box agenda-error" id="ag-error" hidden></p>
+
+  <section class="agenda-body" id="agenda-body">
+    <p class="empty">Chargement de la semaine…</p>
+  </section>
+
+  <section class="card dayoff-box" id="dayoff-box">
+    <div class="dayoff-head">
+      <h2 class="card-title" id="do-heading">Jours de repos</h2>
+      <button type="button" class="btn-ghost" id="do-holidays">Ajouter les fériés</button>
+    </div>
+
+    <p class="agenda-hint">Les fêtes musulmanes (Tabaski, Aïd el-Fitr, Maouloud…) dépendent
+       de la lune : saisis-les comme un jour de repos.</p>
+
+    <p class="error-box dayoff-error" id="do-error" hidden></p>
+
+    <form class="dayoff-add" id="do-form" autocomplete="off">
+      <label class="dayoff-field dayoff-title">
+        <span>Titre</span>
+        <input type="text" id="do-title" maxlength="200" placeholder="Congés d'été, Tabaski…">
+      </label>
+      <label class="dayoff-field">
+        <span>Premier jour</span>
+        <input type="date" id="do-start">
+      </label>
+      <label class="dayoff-field">
+        <span>Dernier jour (facultatif)</span>
+        <input type="date" id="do-end">
+      </label>
+      <label class="dayoff-field">
+        <span>Type</span>
+        <select id="do-kind">
+          <option value="leave">Congé</option>
+          <option value="holiday">Férié</option>
+        </select>
+      </label>
+      <button type="submit" class="btn-primary" id="do-save">Ajouter</button>
+    </form>
+
+    <div class="dayoff-list" id="do-list">
+      <p class="ag-day-empty">Chargement…</p>
+    </div>
+  </section>
+
+  <dialog class="modal ag-detail" id="event-detail">
+    <div class="ag-detail-head">
+      <div>
+        <h2 id="evd-title">Événement</h2>
+        <p class="ag-detail-when" id="evd-when"></p>
+      </div>
+      <button type="button" class="icon-btn" id="evd-close" title="Fermer">✕</button>
+    </div>
+    <dl class="ag-detail-facts" id="evd-facts"></dl>
+    <div class="ag-detail-notes" id="evd-notes" hidden></div>
+    <p class="agenda-hint" id="evd-readonly" hidden></p>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="evd-dismiss">Fermer</button>
+      <button type="button" class="btn-primary" id="evd-edit">Modifier</button>
+    </div>
+  </dialog>
+
+  <dialog class="modal" id="event-modal">
+    <form id="event-form" autocomplete="off">
+      <h2 id="ev-modal-title">Nouvel événement</h2>
+
+      <p class="agenda-hint" id="ev-series-hint" hidden>
+        Cet événement fait partie d'une série : la modification s'applique à toute la série.
+      </p>
+
+      <p class="error-box" id="ev-error" hidden></p>
+
+      <label for="ev-title">Titre</label>
+      <input type="text" id="ev-title" maxlength="200" placeholder="Point ORION">
+
+      <div class="modal-row">
+        <div>
+          <label for="ev-date">Date</label>
+          <input type="date" id="ev-date">
+        </div>
+        <div>
+          <label for="ev-kind">Type</label>
+          <select id="ev-kind">
+            <option value="meeting">Réunion</option>
+            <option value="focus">Créneau bloqué</option>
+            <option value="absence">Absence</option>
+            <option value="personal">Personnel</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-row">
+        <div>
+          <label for="ev-start">Début</label>
+          <input type="time" id="ev-start" step="300">
+        </div>
+        <div>
+          <label for="ev-end">Fin</label>
+          <input type="time" id="ev-end" step="300">
+        </div>
+      </div>
+
+      <div class="modal-row">
+        <div>
+          <label for="ev-location">Lieu</label>
+          <input type="text" id="ev-location" maxlength="200" placeholder="Visio, bureau…">
+        </div>
+        <div>
+          <label for="ev-project">Projet</label>
+          <select id="ev-project">
+            <option value="">Aucun</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-row">
+        <div>
+          <label for="ev-repeat">Répétition</label>
+          <select id="ev-repeat">
+            <option value="none">Aucune</option>
+            <option value="daily">Tous les jours</option>
+            <option value="weekly">Toutes les semaines</option>
+          </select>
+        </div>
+        <div id="ev-until-box" hidden>
+          <label for="ev-until">Jusqu'au</label>
+          <input type="date" id="ev-until">
+        </div>
+      </div>
+
+      <label for="ev-notes">Notes</label>
+      <textarea id="ev-notes" rows="3" placeholder="Ordre du jour, points à préparer…"></textarea>
+
+      <div class="modal-actions agenda-actions">
+        <div class="agenda-delete" id="ev-delete-box" hidden>
+          <button type="button" class="btn-ghost danger" id="ev-delete">Supprimer</button>
+          <button type="button" class="btn-ghost danger" id="ev-delete-one" hidden>Cette occurrence</button>
+          <button type="button" class="btn-ghost danger" id="ev-delete-all" hidden>Toute la série</button>
+        </div>
+        <button type="button" class="btn-ghost" id="ev-cancel">Annuler</button>
+        <button type="submit" class="btn-primary" id="ev-save">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/agenda.js') }}"></script>
+{% endblock %}

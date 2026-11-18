@@ -1,0 +1,504 @@
+/* NOMAIA — base de connaissances (notes techniques en Markdown).
+ *
+ * Deux colonnes sur grand ecran : filtres et liste a gauche (colonne
+ * collante, liste defilante), note ouverte a droite. Une seule colonne
+ * sur telephone : la liste, puis la note.
+ */
+
+/* --- Jetons propres a la page : coloration du code -------------------------- */
+/* Contrastes AA verifies sur le fond des blocs de code dans chaque theme. */
+
+:root,
+:root[data-theme="dark"] {
+  --md-k: #a5b4fc;   /* mots-cles, balises */
+  --md-s: #6ee7b7;   /* chaines */
+  --md-c: #8ea3b9;   /* commentaires */
+  --md-n: #fdba74;   /* nombres */
+  --md-code-bg: rgba(4, 8, 15, 0.55);
+  --md-inline-bg: rgba(129, 140, 248, 0.14);
+}
+
+:root[data-theme="light"] {
+  --md-k: #4338ca;
+  --md-s: #047857;
+  --md-c: #546478;
+  --md-n: #b45309;
+  --md-code-bg: rgba(15, 40, 70, 0.045);
+  --md-inline-bg: rgba(99, 102, 241, 0.09);
+}
+
+/* --- En-tete : menu des modeles --------------------------------------------- */
+
+.nt-menu { position: relative; }
+
+.nt-menu > summary { list-style: none; }
+.nt-menu > summary::-webkit-details-marker { display: none; }
+
+.nt-menu-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 25;
+  width: 260px;
+  padding: 6px;
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-pop);
+  animation: zoom-in var(--dur-fast) var(--ease-out);
+}
+
+.nt-menu-item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nt-menu-item:hover { background: var(--accent-soft); }
+.nt-menu-item strong { color: var(--text-strong); font-weight: 600; }
+.nt-menu-item span { color: var(--text-dim); font-size: 12px; }
+
+/* --- Mise en page ------------------------------------------------------------ */
+
+.nt-layout {
+  display: grid;
+  grid-template-columns: minmax(270px, 340px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.nt-side {
+  position: sticky;
+  top: calc(var(--topbar-h) + 28px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - var(--topbar-h) - 44px);
+  min-width: 0;
+}
+
+/* --- Filtres ------------------------------------------------------------------ */
+
+.nt-filters {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+.nt-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+
+.nt-field label,
+.nt-facet-title {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.nt-field select,
+.nt-field input { width: 100%; }
+
+.nt-facet { display: flex; flex-direction: column; gap: 6px; }
+
+.nt-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.nt-count {
+  margin-left: 2px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.chip.is-on .nt-count { color: var(--accent-text); }
+
+.nt-reset { align-self: flex-start; font-size: 12.5px; }
+
+/* --- Liste des notes ------------------------------------------------------------ */
+
+.nt-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  padding: 2px 4px 4px 2px;
+}
+
+.nt-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 11px 13px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  color: var(--text);
+  text-decoration: none;
+  transition: translate var(--dur) ease, border-color var(--dur) ease, background-color var(--dur) ease;
+}
+
+.nt-item:hover { translate: 0 -2px; border-color: var(--accent-ring); }
+
+.nt-item[aria-current="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.nt-item-head { display: flex; align-items: flex-start; gap: 6px; min-width: 0; }
+
+.nt-item-title {
+  min-width: 0;
+  color: var(--text-strong);
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.nt-item-excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--text-dim);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.nt-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+
+.nt-mono { font-family: var(--mono); font-weight: 500; }
+
+.nt-pin {
+  flex: none;
+  display: inline-flex;
+  color: var(--p2-text);
+}
+
+.nt-pin svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nt-proj {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--text-dim);
+  font-size: 11.5px;
+}
+
+.nt-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--dot, var(--p4));
+}
+
+/* --- Note ouverte ---------------------------------------------------------------- */
+
+.nt-pane { min-width: 0; padding: 20px 22px; }
+
+.nt-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 16px; }
+.nt-empty p { margin: 0; }
+
+.nt-muted { color: var(--text-dim); }
+
+/* Retour a la liste : utile seulement sur telephone. */
+.nt-back { display: none; margin-bottom: 10px; font-size: 13px; }
+
+.nt-read-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.nt-title {
+  flex: 1 1 260px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-strong);
+  overflow-wrap: anywhere;
+}
+
+.nt-title .nt-pin svg { width: 17px; height: 17px; margin-top: 5px; }
+
+.nt-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.nt-actions .btn-ghost { min-height: 34px; padding: 0 12px; font-size: 13px; }
+
+.nt-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 12px;
+}
+
+.nt-date { color: var(--text-dim); font-size: 12.5px; }
+
+.nt-tags { margin-top: 10px; }
+.nt-tag { padding: 2px 9px; font-size: 12px; }
+
+.nt-source { margin: 12px 0 0; color: var(--text-dim); font-size: 13px; }
+
+.nt-body {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.nt-files {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.nt-files-title {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text-strong);
+}
+
+/* --- Edition ------------------------------------------------------------------------ */
+
+.nt-editor { display: flex; flex-direction: column; gap: 14px; }
+
+.nt-editor-head { display: flex; align-items: center; gap: 12px; }
+
+.nt-title-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 650;
+  color: var(--text-strong);
+}
+
+.nt-save-state {
+  flex: none;
+  color: var(--text-dim);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.nt-save-state[data-kind="ok"] { color: var(--ok-text); }
+.nt-save-state[data-kind="busy"] { color: var(--accent-text); }
+.nt-save-state[data-kind="error"] { color: var(--p1-text); }
+
+.nt-fields {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.nt-field-wide { grid-column: 1 / -1; }
+
+/* Onglets Ecrire / Apercu : telephone seulement (cote a cote ailleurs). */
+.nt-tabs { display: none; }
+
+.nt-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.nt-source-input {
+  min-height: 460px;
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.6;
+  tab-size: 4;
+}
+
+.nt-preview {
+  min-height: 460px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 10px 14px;
+  border: 1px dashed var(--line);
+  border-radius: 11px;
+  background: var(--surface-sunken);
+}
+
+.nt-editor-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.nt-hint { margin-right: auto; color: var(--text-dim); font-size: 12.5px; }
+
+/* Bouton de confirmation destructive (fenetre de suppression). */
+.btn-primary.nt-danger { background: var(--p1); color: var(--on-accent); }
+
+.nt-confirm-text { margin: 0; color: var(--text-dim); line-height: 1.5; }
+
+/* --- Rendu Markdown ------------------------------------------------------------------ */
+
+.md {
+  color: var(--text);
+  font-size: 14.5px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.md > :first-child { margin-top: 0; }
+.md > :last-child { margin-bottom: 0; }
+
+.md h1, .md h2, .md h3 {
+  margin: 1.3em 0 0.5em;
+  font-family: var(--font-display);
+  line-height: 1.3;
+  color: var(--text-strong);
+}
+
+.md h1 { font-size: 20px; }
+.md h2 { font-size: 17px; }
+.md h3 { font-size: 15px; }
+
+.md p, .md ul, .md ol, .md blockquote, .md pre, .md .md-table { margin: 0 0 0.85em; }
+
+.md ul, .md ol { padding-left: 1.4em; }
+.md li { margin: 0.2em 0; }
+.md li > ul, .md li > ol { margin: 0.2em 0 0; }
+
+.md li.md-task { list-style: none; margin-left: -1.3em; }
+.md li.md-task input { margin: 0 6px 0 0; vertical-align: -1px; }
+
+.md strong { color: var(--text-strong); font-weight: 650; }
+
+.md a { color: var(--accent-text); text-underline-offset: 2px; }
+
+.md blockquote {
+  padding: 4px 0 4px 14px;
+  border-left: 3px solid var(--accent-2);
+  color: var(--text-dim);
+}
+
+.md hr { margin: 1.2em 0; border: 0; border-top: 1px solid var(--line); }
+
+.md code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--md-inline-bg);
+  color: var(--text-strong);
+  font-family: var(--mono);
+  font-size: 0.88em;
+}
+
+.md pre {
+  padding: 12px 14px;
+  overflow-x: auto;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--md-code-bg);
+}
+
+.md pre code {
+  padding: 0;
+  background: none;
+  color: var(--text);
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+.md .md-k { color: var(--md-k); }
+.md .md-s { color: var(--md-s); }
+.md .md-c { color: var(--md-c); font-style: italic; }
+.md .md-n { color: var(--md-n); }
+
+.md .md-table { overflow-x: auto; }
+
+.md table { border-collapse: collapse; font-size: 13.5px; }
+
+.md th, .md td {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.md th { background: var(--surface-sunken); color: var(--text-strong); font-weight: 600; }
+
+/* --- Telephone ------------------------------------------------------------------------ */
+
+@media (max-width: 860px) {
+  .nt-layout { grid-template-columns: minmax(0, 1fr); }
+
+  .nt-side { position: static; max-height: none; }
+  .nt-filters { max-height: none; }
+  .nt-list { overflow: visible; padding: 0; }
+
+  .nt-pane { padding: 16px 14px; scroll-margin-top: 80px; }
+
+  .nt-back { display: inline-block; }
+
+  .nt-title { font-size: 19px; }
+
+  .nt-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+
+  .nt-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 3px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: var(--surface-sunken);
+  }
+
+  .nt-tabs button {
+    flex: 1;
+    min-height: 38px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-dim);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .nt-tabs button[aria-selected="true"] { background: var(--accent-soft); color: var(--accent-text); }
+
+  .nt-split { grid-template-columns: minmax(0, 1fr); }
+  .nt-split[data-tab="write"] .nt-preview,
+  .nt-split[data-tab="preview"] .nt-source-input { display: none; }
+
+  .nt-source-input, .nt-preview { min-height: 340px; max-height: none; }
+
+  .nt-menu-list { right: auto; left: 0; }
+}

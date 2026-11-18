@@ -1,0 +1,401 @@
+/* NOMAIA — pilotage par etapes (pages Projets, Projet, Bilan).
+ *
+ * Couleurs : uniquement des jetons (tokens.css). Chaque statut pose deux
+ * variables : --st pour les traits et pastilles, --st-text pour le texte
+ * (contraste AA dans les deux themes). La couleur propre a un projet
+ * (--pj-color) vient des donnees et reste telle quelle.
+ */
+
+/* --- Statuts ---------------------------------------------------------------- */
+
+/* Couleur d'un statut de tache ou d'etape. Toujours doublee d'un libelle :
+ * legende, badge ou infobulle. */
+.s-done    { --st: var(--ok);       --st-text: var(--ok-text); }
+.s-doing   { --st: var(--accent-2); --st-text: var(--accent-2-text); }
+.s-todo    { --st: var(--p4);       --st-text: var(--p4-text); }
+.s-late    { --st: var(--p1);       --st-text: var(--p1-text); }
+.s-blocked { --st: var(--p2);       --st-text: var(--p2-text); }
+
+/* --- Barres d'avancement ------------------------------------------------------ */
+/* Le remplissage est une barre pleine largeur reduite par scaleX(--pct) :
+ * l'animation d'entree ne touche que transform. Une barre qui fixe encore sa
+ * largeur en ligne (style="width:…") garde --pct a 1 et reste juste. */
+
+@keyframes pl-fill { from { transform: scaleX(0); } }
+
+.load-bar {
+  display: block;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  box-shadow: inset 0 0 0 1px var(--line-soft);
+  overflow: hidden;
+}
+
+.load-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--accent-strong);
+  transform: scaleX(var(--pct, 1));
+  transform-origin: left;
+  animation: pl-fill 0.7s var(--ease-out) both;
+}
+
+/* Barres horizontales (bilan, activite d'un projet) : la structure vient de
+ * pages/shared.css, la couleur et le mouvement sont redefinis ici. */
+.bar-track {
+  height: 12px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+}
+
+.bar-fill {
+  width: 100%;
+  background: var(--accent-strong);
+  box-shadow: none;
+  transform: scaleX(var(--pct, 1));
+  transform-origin: left;
+  animation: pl-fill 0.7s var(--ease-out) both;
+}
+
+/* Apparition en cascade : l'etat final de .anim-in est l'etat naturel, il
+ * n'a donc pas a etre maintenu (sinon il bloque le soulevement au survol). */
+.container .anim-in { animation-fill-mode: backwards; }
+
+/* Fiche projet rechargee apres une action : pas de nouvelle entree en scene. */
+.is-settled .anim-in,
+.is-settled .load-fill,
+.is-settled .bar-fill { animation: none; }
+
+/* Chiffres qui defilent : largeur fixe par chiffre, rien ne saute. */
+.stat-value { font-variant-numeric: tabular-nums; }
+
+/* --- Graphiques ---------------------------------------------------------------- */
+
+.pl-charts {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+/* Anneau */
+.pl-donut { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.pl-donut svg { flex-shrink: 0; }
+.pl-arc { fill: none; stroke: var(--st); stroke-width: 12; stroke-linecap: butt; }
+.pl-arc-empty { stroke: var(--line); }
+.pl-donut-total {
+  fill: var(--text-strong);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-anchor: middle;
+}
+.pl-donut-label { fill: var(--text-dim); font-size: 9px; text-anchor: middle; }
+
+/* Legende */
+.pl-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; min-width: 150px; flex: 1; }
+.pl-legend li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim); }
+.pl-legend.is-inline { flex-direction: row; flex-wrap: wrap; gap: 4px 14px; margin-top: 12px; }
+.pl-legend.is-inline li { font-size: 12px; }
+.pl-swatch { width: 10px; height: 10px; border-radius: 3px; background: var(--st); flex-shrink: 0; }
+.pl-legend-label { flex: 1; }
+.pl-legend-value { font-family: var(--mono); color: var(--text); font-variant-numeric: tabular-nums; }
+.pl-legend-value small { color: var(--text-dim); font-size: 11px; margin-left: 4px; }
+
+/* Barre empilee : 2 px de fond entre segments */
+.pl-stack {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+  min-width: 80px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.pl-stack.is-empty { background: var(--surface-sunken); box-shadow: inset 0 0 0 1px var(--line-soft); }
+.pl-stack-seg { flex-basis: 0; min-width: 3px; background: var(--st); transition: opacity var(--dur-fast) ease; }
+.pl-stack-seg:hover { opacity: 0.75; }
+
+.pl-stack-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 150px) minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  color: var(--text);
+  text-decoration: none;
+}
+.pl-stack-row:hover .pl-stack-name { color: var(--accent-text); }
+.pl-stack-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pl-stack-total { font-family: var(--mono); font-size: 12px; color: var(--text-dim); text-align: right; }
+
+/* --- Frise des etapes ---------------------------------------------------------- */
+
+.pl-strip { display: flex; gap: 3px; min-width: 120px; }
+.pl-pip {
+  position: relative;
+  flex: 1 1 0;
+  height: 10px;
+  min-width: 5px;
+  border-radius: 3px;
+  background: var(--st);
+  overflow: hidden;
+}
+.pl-pip.s-todo { background: var(--p4-soft); box-shadow: inset 0 0 0 1px var(--line); }
+.pl-pip.s-doing { background: var(--surface-sunken); background: color-mix(in srgb, var(--st) 24%, transparent); }
+.pl-pip-fill { position: absolute; inset: 0 auto 0 0; background: var(--st); }
+/* Etape en cours : un anneau net, sans halo. */
+.pl-pip.is-current { box-shadow: 0 0 0 1.5px var(--text-strong); }
+
+.pl-strip-large .pl-strip { gap: 4px; }
+.pl-strip-large .pl-pip {
+  height: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: translate var(--dur-fast) var(--ease-out), opacity var(--dur-fast) ease;
+}
+.pl-strip-large .pl-pip:hover { translate: 0 -1px; opacity: 0.85; }
+.pl-stages { display: flex; gap: 4px; margin-bottom: 6px; }
+/* Grandes etapes : petits titres de groupe, seule place des capitales. */
+.pl-stage {
+  flex-basis: 0;
+  min-width: 0;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Meteo et badges ------------------------------------------------------------ */
+
+.pl-weather { font-size: 15px; white-space: nowrap; }
+.pl-weather.is-none { color: var(--text-dim); font-size: 12.5px; }
+#pj-weather .pl-weather { font-size: 13px; color: var(--text-dim); }
+.pl-weather-note {
+  margin: -8px 0 18px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--line-strong);
+  color: var(--text-dim);
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+/* Badges de statut, de gravite et de nature : fond doux, texte contraste. */
+.pl-state,
+.pl-sev,
+.pl-kind,
+.pl-side {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.pl-state,
+.pl-sev {
+  background: var(--surface-sunken);
+  background: color-mix(in srgb, var(--st) 14%, transparent);
+  color: var(--st-text);
+}
+
+.pl-kind {
+  margin-left: 6px;
+  background: var(--surface-sunken);
+  color: var(--text-dim);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.pl-side {
+  margin-left: 6px;
+  border: 1px dashed var(--line-strong);
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* --- Tableau de pilotage -------------------------------------------------------- */
+
+.pl-chip-sep { width: 1px; margin: 0 4px; align-self: stretch; background: var(--line); }
+.pl-table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.pl-table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 900px; }
+.pl-table th {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+.pl-table td { padding: 11px 12px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+.pl-table tbody tr { transition: background-color var(--dur-fast) ease; }
+.pl-table tbody tr:last-child td { border-bottom: 0; }
+.pl-table tbody tr:hover { background: var(--surface-hover); }
+.pl-col-name { border-left: 3px solid var(--pj-color, var(--accent)); min-width: 130px; }
+.pl-name-link { color: var(--text-strong); font-weight: 600; text-decoration: none; }
+.pl-name-link:hover { color: var(--accent-text); }
+.pl-col-weather { text-align: center; }
+.pl-col-progress { min-width: 120px; }
+.pl-col-strip { min-width: 150px; }
+.pl-col-phase { min-width: 170px; }
+.pl-col-tasks { min-width: 110px; }
+.pl-col-tasks .pl-cell-sub { margin-top: 4px; }
+.pl-col-signals { width: 150px; }
+.pl-col-signals .pj-signal { display: inline-block; white-space: nowrap; cursor: help; }
+.pl-signal-first { margin-top: 4px; overflow-wrap: anywhere; }
+.pl-ok { color: var(--ok-text); }
+.pl-cell-main { display: block; overflow-wrap: anywhere; }
+.pl-cell-sub { display: block; color: var(--text-dim); font-size: 12px; }
+.pl-cell-sub.is-late, .pl-ms .is-late, .pl-phase-date.is-late { color: var(--p1-text); }
+
+.pj-card .pl-strip { margin: 2px 0; }
+
+/* --- Fiche projet : etapes -------------------------------------------------------- */
+
+.pl-phases-panel { margin-bottom: 18px; }
+.pl-phases-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 12px; }
+.pl-phases-head .card-title { margin: 0; }
+.pl-phases-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.pl-milestones { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 14px; font-size: 13px; color: var(--text-dim); }
+.pl-ms strong { color: var(--text); font-weight: 600; }
+.pl-ms-label { color: var(--text-dim); font-size: 12px; margin-right: 4px; }
+
+.pl-phase {
+  margin-bottom: 8px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--st, var(--line));
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+.pl-phase > summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  list-style: none;
+  transition: background-color var(--dur-fast) ease;
+}
+.pl-phase > summary:hover { background: var(--surface-hover); }
+.pl-phase > summary::-webkit-details-marker { display: none; }
+.pl-phase[open] > summary { border-bottom: 1px solid var(--line-soft); border-radius: var(--radius-md) var(--radius-md) 0 0; }
+.pl-phase-seq { width: 22px; font-family: var(--mono); color: var(--text-dim); text-align: right; }
+.pl-phase-name { flex: 1 1 160px; min-width: 0; font-weight: 600; color: var(--text-strong); overflow-wrap: anywhere; }
+.pl-phase-name small { display: block; color: var(--text-dim); font-size: 12px; font-weight: 400; }
+.pl-phase .pl-state { margin-left: 0; }
+.pl-phase-progress { display: flex; align-items: center; gap: 8px; width: 120px; }
+.pl-phase-progress .load-bar { flex: 1; margin-top: 0; height: 5px; }
+.pl-phase-progress > span:last-child { font-family: var(--mono); font-size: 12px; color: var(--accent-text); min-width: 38px; text-align: right; }
+.pl-phase-count { font-family: var(--mono); font-size: 12px; color: var(--text-dim); min-width: 34px; }
+.pl-phase-date { color: var(--text-dim); }
+.pl-phase .icon-btn { padding: 0 6px; }
+.pl-phase-body { padding: 10px 12px 4px; }
+.pl-phase-empty { margin: 0 0 8px; }
+.pj-task-add select { max-width: 220px; }
+
+/* --- A surveiller ----------------------------------------------------------------- */
+
+.pl-watch { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.pl-watch li { font-size: 13.5px; }
+.pl-watch .as-link {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.pl-watch .as-link:hover { color: var(--accent-text); text-decoration: underline; }
+.pl-watch-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 3px; }
+.pl-watch-tags .pl-state, .pl-watch-tags .pl-side { margin-left: 0; }
+
+/* --- Anomalies, livrables, registre ------------------------------------------------- */
+
+.sev-critical { --st: var(--p1); --st-text: var(--p1-text); }
+.sev-major    { --st: var(--p2); --st-text: var(--p2-text); }
+.sev-minor    { --st: var(--p4); --st-text: var(--p4-text); }
+.pl-record-status { margin-left: 6px; font-size: 12px; color: var(--text-dim); }
+.pl-record-status.r-open { color: var(--p2-text); }
+.pl-record-status.r-settled, .pl-record-status.r-acted { color: var(--ok-text); }
+
+.pl-quality {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.pl-quality > .pj-panel { margin: 0; min-width: 0; }
+.pl-quality-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 10px; font-size: 13px; }
+.pl-quality-head .pl-sev { margin-left: 0; }
+.pl-count { font-family: var(--mono); font-size: 12px; color: var(--text-dim); margin-right: 4px; }
+.pl-quality-done { margin-left: auto; }
+.pl-quality-bar { flex: 1; min-width: 80px; height: 5px; margin-top: 0; }
+.pl-quality .pl-watch-tags .pl-sev, .pl-quality .pl-watch-tags .pl-kind { margin-left: 0; }
+.pl-more { margin: 8px 0 0; }
+
+.pl-register { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; max-height: 340px; overflow-y: auto; }
+.pl-register li { font-size: 13.5px; }
+.pl-register-head { display: flex; align-items: center; gap: 6px; }
+.pl-register-head .pl-kind { margin-left: 0; }
+.pl-register-head .icon-btn { padding: 0 6px; }
+.pl-register .pj-journal-text { margin: 3px 0 0; }
+.pl-register-task {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.pl-register-task:hover { text-decoration: underline; }
+.pj-comment-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.pj-comment-opts select { flex: 1 1 180px; }
+
+@media (max-width: 1100px) {
+  .pl-quality { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 860px) {
+  .pl-quality { grid-template-columns: 1fr; }
+  .pl-charts { grid-template-columns: 1fr; }
+  .pl-phase-progress { width: 110px; }
+  .pl-phases-actions { margin-left: 0; }
+
+  /* Cibles tactiles d'au moins 38 px. */
+  .pl-stack-row { min-height: 38px; }
+  .pl-strip-large .pl-pip { height: 28px; }
+  .pl-phase > summary { min-height: 48px; }
+  .pl-watch .as-link,
+  .pl-register-task {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+  }
+}

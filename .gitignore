@@ -1,0 +1,37 @@
+# Donnees locales : jamais versionnees (contiennent des secrets et du vecu)
+nomaia.db
+nomaia.db-wal
+nomaia.db-shm
+nomaia.log
+public/uploads/
+public/backups/
+public/exports/
+webview/
+devtracker/
+devtrack/
+.env
+!.env.example
+
+# Artefacts de construction
+build/
+dist/
+*.spec.bak
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Editeurs
+.vscode/
+.idea/
+*.swp
+
+# Construction avec lanceur PyInstaller recompile (tools/build_bootloader.ps1)
+.venv-build/
+build-cache/
+
+# Jeu de donnees de demonstration (tools/seed_demo.py)
+demo-data/

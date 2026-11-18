@@ -1,0 +1,172 @@
+{% extends "layout.html" %}
+{% set page_styles = ["plan"] %}
+
+{% block title %}NOMAIA — Plan du jour{% endblock %}
+
+{% block header_date %}<span id="header-date" data-today="{{ today }}"></span>{% endblock %}
+
+{% block content %}
+  <header class="page-head">
+    <div>
+      <p class="page-kicker" id="pl-date">—</p>
+      <h1 class="page-title">Plan du jour</h1>
+    </div>
+    <div class="page-actions">
+      <div class="plan-nav" role="group" aria-label="Changer de jour">
+        <button type="button" class="icon-btn" id="pl-prev" title="Jour précédent" aria-label="Jour précédent">◀&#xFE0E;</button>
+        <button type="button" class="btn-ghost" id="pl-today">Aujourd'hui</button>
+        <button type="button" class="icon-btn" id="pl-next" title="Jour suivant" aria-label="Jour suivant">▶&#xFE0E;</button>
+      </div>
+      <button type="button" class="btn-ghost" id="pl-reset-order" hidden
+        title="Oublier l'ordre choisi à la main et laisser NOMAIA classer">Ordre automatique</button>
+      <button type="button" class="btn-ghost plan-done-toggle" id="pl-done-toggle" aria-pressed="false" hidden
+        title="Afficher dans le fil les tâches déjà terminées aujourd'hui">Faites (0)</button>
+      <button type="button" class="btn-ghost" id="pl-settings-open">Horaires</button>
+      <button type="button" class="btn-primary" id="pl-close-day">Clôturer ma journée</button>
+    </div>
+  </header>
+
+  <section class="card plan-morning" id="pl-morning" hidden aria-label="Note de la veille">
+    <p class="plan-morning-label" id="pl-morning-label">Noté hier pour aujourd'hui</p>
+    <p class="plan-morning-text" id="pl-morning-text"></p>
+  </section>
+
+  <section class="stats plan-kpis" id="pl-kpis" aria-label="Indicateurs du jour">
+    {# Chaque indicateur s'ouvre sur son detail, pour le jour affiche. #}
+    <div class="stat kpi" data-kpi="planned" role="button" tabindex="0" aria-haspopup="dialog" title="Voir le détail"><span class="stat-label" id="kpi-planned-label">Planifié aujourd'hui</span><span class="stat-value" id="kpi-planned">—</span><span class="kpi-hint" id="kpi-planned-hint"></span></div>
+    <div class="stat kpi kpi-accent" data-kpi="tracked" role="button" tabindex="0" aria-haspopup="dialog" title="Voir le détail"><span class="stat-label">Temps suivi</span><span class="stat-value" id="kpi-tracked">—</span><span class="kpi-hint" id="kpi-tracked-hint"></span></div>
+    <div class="stat kpi kpi-late" data-kpi="late" role="button" tabindex="0" aria-haspopup="dialog" title="Voir le détail"><span class="stat-label">En retard</span><span class="stat-value" id="kpi-late">—</span><span class="kpi-hint" id="kpi-late-hint">tâches à échéance dépassée</span></div>
+    <div class="stat kpi kpi-client" data-kpi="client" role="button" tabindex="0" aria-haspopup="dialog" title="Voir le détail"><span class="stat-label">Attente client</span><span class="stat-value" id="kpi-client">—</span><span class="kpi-hint" id="kpi-client-hint"></span></div>
+  </section>
+
+  <div class="plan-layout">
+    <div class="plan-main">
+    <section class="card plan-load" aria-label="Charge de la journée">
+      <div class="plan-load-text">
+        <span id="pl-load-text">—</span>
+        <span id="pl-agenda" class="plan-agenda" hidden></span>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Planifié</span>
+        <div class="load-bar"><div class="load-fill" id="pl-load-fill"></div></div>
+        <span class="load-value" id="pl-load-value"></span>
+      </div>
+      <div class="load-row" id="pl-real-row" hidden>
+        <span class="load-label">Temps réel</span>
+        <div class="load-bar"><div class="load-fill is-real" id="pl-real-fill"></div></div>
+        <span class="load-value" id="pl-real-value"></span>
+      </div>
+    </section>
+
+    <p class="plan-hint" id="pl-hint">Glisse une tâche pour changer l'ordre de la journée · ⇧ la fait passer maintenant · clic sur un titre pour la détailler.</p>
+
+    <div class="timer-banner" id="timer-banner" hidden></div>
+
+    <section class="plan-risks" id="pl-risks" hidden></section>
+
+
+    <section id="plan-body">
+      <p class="empty">Calcul du plan…</p>
+    </section>
+
+    <section class="overflow-box" id="overflow-box" hidden>
+      <h3>Ne rentre pas dans la journée</h3>
+      <div id="overflow-list"></div>
+    </section>
+    </div>
+
+    <aside class="plan-aside" aria-label="À côté du plan">
+      <section class="card plan-side-card">
+        <h2 class="card-title">Agenda du jour</h2>
+        <div id="ps-agenda"><div class="skel skel-line"></div><div class="skel skel-line"></div></div>
+      </section>
+      <section class="card plan-side-card">
+        <h2 class="card-title">Signaux projets</h2>
+        <div id="ps-signals"><div class="skel skel-row"></div></div>
+      </section>
+      <section class="card plan-side-card">
+        <div class="ps-head">
+          <h2 class="card-title">Boîte de réception</h2>
+          <a class="link" href="/" id="ps-inbox-link">Trier</a>
+        </div>
+        <div id="ps-inbox"><div class="skel skel-line"></div></div>
+      </section>
+    </aside>
+  </div>
+
+  <dialog class="modal day-close" id="day-close" aria-labelledby="dc-title">
+    <form id="dc-form" method="dialog">
+      <h2 id="dc-title">Clôturer ma journée</h2>
+      <p class="plan-hint" id="dc-day"></p>
+      <div class="dc-recap" id="dc-recap"><div class="skel skel-line"></div><div class="skel skel-line"></div></div>
+      <label for="dc-tomorrow">Pour demain</label>
+      <textarea id="dc-tomorrow" rows="4" maxlength="4000"
+        placeholder="Ce que je reprends en premier, ce que j'attends, ce qu'il ne faut pas oublier…"></textarea>
+      <p class="error-box" id="dc-error" hidden></p>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="dc-cancel">Annuler</button>
+        <button type="submit" class="btn-primary" id="dc-save">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal kpi-detail" id="kpi-detail" aria-labelledby="kd-title">
+    <h2 id="kd-title"></h2>
+    <p class="plan-hint" id="kd-day"></p>
+    <div class="kd-body" id="kd-body"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="kd-close">Fermer</button>
+    </div>
+  </dialog>
+
+  {% include "_task_detail.html" %}
+
+  <dialog class="modal" id="settings-modal">
+    <form id="settings-form" method="dialog">
+      <h2>Horaires de travail</h2>
+
+      <div class="modal-row">
+        <div>
+          <label for="st-work-start">Début</label>
+          <input type="time" id="st-work-start">
+        </div>
+        <div>
+          <label for="st-work-end">Fin</label>
+          <input type="time" id="st-work-end">
+        </div>
+      </div>
+
+      <div class="modal-row">
+        <div>
+          <label for="st-lunch-start">Pause déjeuner</label>
+          <input type="time" id="st-lunch-start">
+        </div>
+        <div>
+          <label for="st-lunch-end">Reprise</label>
+          <input type="time" id="st-lunch-end">
+        </div>
+      </div>
+
+      <div class="modal-row">
+        <div>
+          <label for="st-buffer">Marge sur les estimations (%)</label>
+          <input type="number" id="st-buffer" min="0" max="100" step="5">
+        </div>
+        <div>
+          <label for="st-horizon">Horizon planifié (jours)</label>
+          <input type="number" id="st-horizon" min="0" max="30" step="1">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="st-cancel">Annuler</button>
+        <button type="submit" class="btn-primary">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/task_detail.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/plan.js') }}"></script>
+{% endblock %}

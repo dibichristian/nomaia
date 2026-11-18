@@ -1,0 +1,495 @@
+/* NOMAIA — plan du jour.
+ *
+ * Lignes communes (.slot, barre de priorite, case a cocher) : pages/tasks.css.
+ * Ici : en-tete, charge de la journee, minuteur, reunions et mise en page
+ * propre au plan, dont la ligne repliee du telephone.
+ */
+
+/* --- En-tete --------------------------------------------------------------- */
+
+/* Le jour affiche sert de surtitre : « Vendredi 6 novembre ». */
+#pl-date::first-letter { text-transform: uppercase; }
+
+.plan-nav { display: flex; align-items: center; gap: 6px; }
+
+.plan-nav .icon-btn { min-width: 38px; min-height: 38px; font-size: 13px; }
+
+/* --- Charge de la journee ---------------------------------------------------- */
+
+.plan-load {
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.plan-load-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+#pl-load-text { color: var(--text); }
+
+.plan-agenda { color: var(--text-dim); }
+
+.load-bar {
+  height: 6px;
+  margin-top: 10px;
+  overflow: hidden;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+}
+
+.load-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.load-fill.full { background: linear-gradient(90deg, var(--p2), var(--p1)); }
+
+/* Deux barres etiquetees : planifie, puis temps reel (suivi du jour). */
+.load-row {
+  display: grid;
+  grid-template-columns: 78px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.load-row .load-bar { margin-top: 0; }
+
+.load-label { font-size: 12px; color: var(--text-dim); }
+
+.load-value {
+  min-width: 92px;
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.load-fill { transition: width 0.4s ease; }
+
+.load-fill.is-real { background: var(--ok); }
+
+/* Au-dela du planifie : le reel deborde la charge prevue. */
+.load-fill.is-real.over { background: linear-gradient(90deg, var(--ok), var(--p2)); }
+
+@media (max-width: 560px) {
+  .load-row { grid-template-columns: 70px 1fr auto; gap: 8px; }
+  .load-value { min-width: 0; font-size: 11px; }
+}
+
+/* --- Fil de la journee ----------------------------------------------------- */
+
+.window-title { margin: 22px 0 10px; }
+
+.slot-time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 52px;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.slot-time strong { color: var(--accent-text); font-weight: 600; font-size: 13px; }
+.slot-time span { color: var(--text-dim); font-size: 11.5px; }
+
+.slot-actions { display: flex; flex: none; gap: 6px; }
+
+/* Travail deja fait (bouton « Faites ») : ligne en retrait, heure eteinte.
+ * Titre barre et grise : .slot.is-done (pages/tasks.css). */
+.plan-slot.plan-done {
+  background: var(--surface-sunken);
+  box-shadow: none;
+}
+
+/* Creneau de l'autre espace (selecteur Pro ou Perso) : temps pris, detail cache. */
+.plan-slot.is-masked {
+  background: repeating-linear-gradient(135deg, var(--surface-sunken) 0 8px, transparent 8px 16px);
+  box-shadow: none;
+  border-style: dashed;
+}
+
+.is-masked .slot-time strong,
+.is-masked .slot-title { color: var(--text-dim); font-weight: 500; }
+
+.plan-done .slot-time strong { color: var(--text-dim); }
+.plan-done .slot-meta { color: var(--text-dim); }
+
+.plan-done-toggle[aria-pressed="true"] {
+  border-color: var(--accent-ring);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+/* Lignes secondaires (debordement, jour passe) : plus serrees, sans ombre. */
+.slot.compact {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  box-shadow: none;
+}
+
+/* --- Minuteur ------------------------------------------------------------- */
+
+.timer-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: var(--ok-soft);
+  color: var(--text);
+  font-size: 13.5px;
+}
+
+.timer-banner strong { color: var(--text-strong); }
+
+.timer-dot {
+  width: 8px; height: 8px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--ok);
+  animation: pouls 1.7s ease-in-out infinite;
+}
+
+.timer-banner .btn-ghost { margin-left: auto; min-height: 32px; padding: 0 12px; }
+
+/* --- Reunions dans le plan du jour ----------------------------------------- */
+
+/* Une reunion n'est pas une tache : fond en retrait, barre a la couleur du type. */
+.slot.event {
+  background: var(--surface-sunken);
+  box-shadow: none;
+}
+
+.slot.event::before { background: var(--accent-2); }
+
+.slot.event[data-kind="focus"] { background: var(--ok-soft); }
+.slot.event[data-kind="focus"]::before { background: var(--ok); }
+
+.slot.event[data-kind="absence"] { background: var(--p2-soft); }
+.slot.event[data-kind="absence"]::before { background: var(--p2); }
+
+/* Rendez-vous personnel : teinte fuchsia, sans jeton commun (propre au plan). */
+.slot.event[data-kind="personal"] {
+  --event-personal: #e879f9;
+  --event-personal-soft: rgba(232, 121, 249, 0.08);
+  background: var(--event-personal-soft);
+}
+
+:root[data-theme="light"] .slot.event[data-kind="personal"] {
+  --event-personal: #c026d3;
+  --event-personal-soft: rgba(192, 38, 211, 0.07);
+}
+
+.slot.event[data-kind="personal"]::before { background: var(--event-personal); }
+
+.slot-hour {
+  min-width: 52px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--accent-2-text);
+}
+
+.slot.event .slot-title { color: var(--text); }
+
+/* --- Jour de repos ----------------------------------------------------------- */
+
+.plan-dayoff {
+  padding: 20px;
+  margin-bottom: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  color: var(--text);
+  text-align: center;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.plan-dayoff strong { color: var(--accent-2-text); }
+
+/* --- Echeances en danger et debordement ------------------------------------
+ * Bloc propre au plan, encore decrit dans pages/shared.css avec des couleurs
+ * fixes : ces regles le ramenent aux jetons (lisible en theme clair). */
+
+.plan-risks {
+  padding: 14px 16px;
+  background: var(--p2-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.plan-risks-head { color: var(--p2-text); }
+
+.plan-risks-hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.overflow-box h3 { color: var(--p2-text); }
+
+/* --- Telephone ----------------------------------------------------------------
+ * Ligne de creneau repliee : heure, case et actions sur la premiere ligne,
+ * titre en pleine largeur dessous (il revenait a la ligne a chaque mot). */
+
+@media (max-width: 860px) {
+  .plan-nav #pl-today { flex: 1; }
+
+  .plan-slot {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    grid-template-areas:
+      "check time actions"
+      "body body body";
+    align-items: center;
+    gap: 6px 10px;
+    padding: 8px 10px 12px 16px;
+  }
+
+  /* Glisser-deposer indisponible au doigt : la poignee ne sert a rien. */
+  .plan-slot .drag-handle { display: none; }
+
+  .plan-slot .check-hit { grid-area: check; margin: 0 -6px 0 -8px; }
+
+  .plan-slot .slot-time {
+    grid-area: time;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .plan-slot .slot-time span::before { content: "– "; }
+
+  .plan-slot .slot-actions { grid-area: actions; justify-self: end; }
+  .plan-slot .slot-body { grid-area: body; }
+  .plan-slot .slot-title { font-size: 15px; }
+
+  /* Debordement : bouton « Maintenant » sous le titre, aligne a droite. */
+  .overflow-box .slot { flex-wrap: wrap; }
+  .overflow-box .slot-body { flex: 1 1 calc(100% - 60px); }
+  .overflow-box .slot-now { margin-left: auto; min-height: 38px; }
+
+  .slot-hour { min-width: 0; }
+}
+
+/* --- Cloture de journee et note du matin (lot 8) ----------------------------- */
+
+.plan-morning {
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  border-color: var(--accent-ring);
+  background: var(--accent-soft);
+}
+
+.plan-morning-label {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.plan-morning-text { margin: 0; white-space: pre-line; color: var(--text-strong); }
+
+.day-close .dc-recap {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-soft);
+}
+
+.dc-recap ul { margin: 0 0 8px; padding-left: 18px; }
+.dc-recap li { margin: 2px 0; font-size: 13.5px; }
+.dc-title { margin: 8px 0 4px; font-weight: 650; color: var(--text-strong); font-size: 13.5px; }
+.dc-title:first-child { margin-top: 0; }
+.dc-muted { color: var(--text-dim); font-size: 12.5px; margin: 0 0 6px; }
+
+/* --- Alignement sur la maquette : indicateurs, deux colonnes, etiquettes -------- */
+
+.plan-kpis { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin-bottom: 18px; }
+.plan-kpis .kpi { flex-direction: column; justify-content: flex-start; }
+.plan-kpis .kpi .stat-value { margin: 4px 0 2px; }
+.kpi-hint { font-size: 12px; color: var(--text-dim); }
+.kpi-accent .stat-value { color: var(--accent-text); }
+.kpi-late .stat-value { color: var(--p1-text); }
+.kpi-client .stat-value { color: var(--p2-text); }
+
+/* Tuiles cliquables : chacune ouvre son detail pour le jour affiche. */
+.plan-kpis .kpi[data-kpi] {
+  cursor: pointer;
+  transition: background var(--dur, 0.2s) ease, border-color var(--dur, 0.2s) ease;
+}
+.plan-kpis .kpi[data-kpi]:hover { background: var(--surface-hover); border-color: var(--line-strong); }
+.plan-kpis .kpi[data-kpi]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* --- Detail d'un indicateur ----------------------------------------------------- */
+
+.kpi-detail { width: min(560px, calc(100vw - 32px)); }
+.kpi-detail h2 { margin-bottom: 2px; }
+.kpi-detail #kd-day { margin: 0 0 12px; }
+
+.kd-body { max-height: min(60vh, 520px); overflow-y: auto; }
+
+.kd-list { margin: 0; padding: 0; list-style: none; }
+
+.kd-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.kd-row:first-child { border-top: 0; }
+
+.kd-main { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
+
+.kd-title {
+  padding: 0;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text-strong);
+  text-align: left;
+  background: none;
+  border: 0;
+  overflow-wrap: anywhere;
+}
+button.kd-title { cursor: pointer; }
+button.kd-title:hover { color: var(--accent-text); text-decoration: underline; }
+button.kd-title:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.kd-meta { font-size: 12px; color: var(--text-dim); }
+
+.kd-value {
+  flex-shrink: 0;
+  font-size: 12.5px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.kd-row.is-running .kd-value { color: var(--ok-text); }
+
+.kd-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0 0;
+  padding-top: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.kd-total strong { color: var(--text-strong); font-weight: 600; }
+.kd-body > .kd-total:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+
+.kd-section { margin: 14px 0 4px; font-size: 12px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+.kd-note { margin: 10px 0 0; font-size: 12px; color: var(--text-dim); }
+.kd-empty { margin: 6px 0; font-size: 13px; color: var(--text-dim); }
+
+.plan-layout { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
+.plan-main { flex: 999 1 520px; min-width: 0; }
+.plan-aside { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 84px; }
+
+.plan-side-card { padding: 16px; }
+.plan-side-card .card-title { margin-bottom: 10px; }
+.ps-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.ps-head .card-title { margin-bottom: 8px; }
+.ps-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.ps-list li { display: flex; gap: 12px; align-items: flex-start; }
+.ps-time { font-family: var(--mono); font-size: 12px; color: var(--accent-2-text); padding-top: 2px; }
+.ps-title { display: block; font-weight: 550; color: var(--text-strong); overflow-wrap: anywhere; }
+.ps-sub { display: block; font-size: 12px; color: var(--text-dim); }
+.ps-empty { margin: 0; font-size: 13px; color: var(--text-dim); }
+.ps-capture { margin: 0 0 4px; font-size: 13px; color: var(--text); overflow-wrap: anywhere; }
+
+.ps-signal {
+  display: block;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--p2);
+  background: var(--p2-soft);
+  color: var(--text);
+  text-decoration: none;
+  transition: translate var(--dur) ease;
+}
+
+.ps-signal:last-child { margin-bottom: 0; }
+.ps-signal:hover { translate: 0 -1px; }
+.ps-signal.is-danger { border-color: var(--p1); background: var(--p1-soft); }
+
+.ps-bar { display: block; height: 6px; margin: 8px 0 4px; border-radius: 999px; background: var(--surface-sunken); overflow: hidden; }
+
+.ps-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--p2);
+  transform-origin: left center;
+  transform: scaleX(var(--pct, 0));
+  animation: ps-fill 0.9s var(--ease-out) backwards;
+}
+
+.ps-signal.is-danger .ps-bar span { background: var(--p1); }
+@keyframes ps-fill { from { transform: scaleX(0); } }
+
+/* Ligne de creneau : etiquettes, priorite a droite, ligne en cours mise en avant. */
+.slot-tags { display: flex; flex-wrap: wrap; gap: 4px; flex: none; }
+.slot-prio { flex: none; width: 26px; text-align: center; font-size: 11.5px; font-weight: 700; color: var(--text-dim); }
+.plan-slot[data-priority="1"] .slot-prio { color: var(--p1-text); }
+.plan-slot[data-priority="2"] .slot-prio { color: var(--p2-text); }
+.plan-slot[data-priority="3"] .slot-prio { color: var(--p3-text); }
+.plan-slot.is-running { border-color: var(--accent-ring); background: var(--accent-soft); }
+
+/* Case ronde (maquette) : la coche apparait au clic. */
+.plan-slot .task-check,
+.slot.compact .task-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border-radius: 999px;
+  border: 1.5px solid var(--text-dim);
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background-color var(--dur) ease, border-color var(--dur) ease;
+}
+
+.plan-slot .task-check:checked,
+.slot.compact .task-check:checked {
+  border-color: var(--ok);
+  background: var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2304131a' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / 13px no-repeat;
+}
+
+.plan-slot .task-check:hover { border-color: var(--accent); }
+
+@media (max-width: 1100px) {
+  .plan-aside { position: static; }
+}
+
+@media (max-width: 860px) {
+  .plan-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .slot-prio { display: none; }
+  .slot-tags { grid-column: 1 / -1; }
+}

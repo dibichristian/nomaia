@@ -1,0 +1,605 @@
+/* NOMAIA — agenda. */
+
+/* --- Teintes propres a l'agenda ------------------------------------------- */
+/* Couleur par type : reprise par la pastille de legende et par chaque bloc.
+   --ev-color colore le trait et la pastille ; --ev-text, le texte (contraste AA).
+   Un evenement rattache a un projet ecrase --ev-color avec la teinte du projet,
+   son texte garde la teinte du type pour rester lisible. */
+
+.ev-meeting  { --ev-color: var(--accent); --ev-text: var(--accent-text); }
+.ev-focus    { --ev-color: var(--ok);     --ev-text: var(--ok-text); }
+.ev-absence  { --ev-color: var(--p2);     --ev-text: var(--p2-text); }
+.ev-personal { --ev-color: #d946ef;       --ev-text: #f0abfc; }
+
+:root[data-theme="light"] .ev-personal { --ev-color: #c026d3; --ev-text: #a21caf; }
+
+/* Conges et feries : indigo discret, plus marque en clair pour rester visible. */
+.agenda-body,
+.agenda-legend {
+  --ag-leave-soft: rgba(129, 140, 248, 0.08);
+}
+
+:root[data-theme="light"] .agenda-body,
+:root[data-theme="light"] .agenda-legend {
+  --ag-leave-soft: rgba(99, 102, 241, 0.08);
+}
+
+/* --- En-tete et legende ---------------------------------------------------- */
+
+.agenda-head .page-kicker::first-letter { text-transform: uppercase; }
+
+.ag-nav { display: flex; align-items: center; gap: 6px; }
+
+.ag-nav .icon-btn { min-width: 38px; min-height: 38px; }
+
+.agenda-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: -6px 0 16px;
+  padding: 0 4px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+
+.legend-item i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--ev-color);
+}
+
+.agenda-error { margin: 0 0 14px; }
+
+.agenda-hint {
+  margin: 0 0 4px;
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+
+/* --- Grille de la semaine -------------------------------------------------- */
+
+.agenda-scroll {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: auto;
+  max-height: max(420px, calc(100vh - 290px));
+}
+
+.agenda-grid {
+  display: grid;
+  grid-template-columns: 56px repeat(7, minmax(0, 1fr));
+  min-width: 720px;
+}
+
+/* En-tetes collants : fond opaque pour que les blocs passent dessous proprement. */
+.ag-corner,
+.ag-dayhead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface-strong);
+  border-bottom: 1px solid var(--line);
+}
+
+.ag-corner { border-right: 1px solid var(--line); }
+
+.ag-dayhead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 9px 4px;
+  border-left: 1px solid var(--line-soft);
+}
+
+.ag-dayname {
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ag-dayname::first-letter { text-transform: uppercase; }
+
+.ag-daynum {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-strong);
+}
+
+/* Jour courant : fond teinte (superpose au fond opaque) et trait d'accent. */
+.ag-dayhead.is-today {
+  background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--surface-strong);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.ag-dayhead.is-today .ag-dayname,
+.ag-dayhead.is-today .ag-daynum { color: var(--accent-text); }
+
+.ag-dayhead.is-today .ag-daynum { font-weight: 700; }
+
+.ag-gutter {
+  position: relative;
+  border-right: 1px solid var(--line);
+}
+
+.ag-hour {
+  position: absolute;
+  right: 8px;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ag-col {
+  position: relative;
+  border-left: 1px solid var(--line-soft);
+  /* Les traits d'heure sont peints en fond, la hauteur du motif est posee
+     par le script pour coller a l'echelle courante. */
+  background-image: linear-gradient(to bottom, var(--line-soft) 1px, transparent 1px);
+  background-repeat: repeat-y;
+}
+
+.ag-col.is-today { background-color: var(--accent-soft); }
+
+/* Bloc d'evenement : fond opaque, voile de la couleur du type en pseudo-element
+   (pas de color-mix : le voile suit aussi la teinte d'un projet). */
+.ag-event {
+  position: absolute;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: left;
+  padding: 4px 7px;
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ev-color);
+  border-radius: 7px;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease;
+}
+
+.ag-event::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ev-color);
+  opacity: 0.1;
+  transition: opacity var(--dur-fast) ease;
+}
+
+.ag-event:hover {
+  z-index: 1;
+  border-color: var(--line-strong);
+  border-left-color: var(--ev-color);
+}
+
+.ag-event:hover::before { opacity: 0.18; }
+
+.ag-event:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; z-index: 1; }
+
+.ag-event-time {
+  color: var(--ev-text);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ag-event-title {
+  color: var(--text-strong);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.ag-event-meta {
+  color: var(--text-dim);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.ag-event-repeat {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+/* Creneau court (30 min et moins) : une seule ligne, le titre d'abord. L'heure
+ * passe derriere, l'info-bulle et la fiche de detail donnent le reste. */
+.ag-event.is-short {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px;
+}
+
+.ag-event.is-short .ag-event-title {
+  order: -1;
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: normal;
+}
+
+.ag-event.is-short .ag-event-time { flex-shrink: 0; }
+.ag-event.is-short .ag-event-meta,
+.ag-event.is-short .ag-event-source,
+.ag-event.is-short .ag-event-repeat { display: none; }
+
+/* --- Fiche de detail d'un evenement ---------------------------------------- */
+
+.ag-detail { width: min(560px, 94vw); }
+
+.ag-detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.ag-detail-head h2 { margin: 0; overflow-wrap: anywhere; }
+
+.ag-detail-when {
+  margin: 4px 0 0;
+  color: var(--accent-text);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ag-detail-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 7px 16px;
+  margin: 16px 0 0;
+  font-size: 13.5px;
+}
+
+.ag-detail-facts dt {
+  color: var(--text-dim);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding-top: 1px;
+}
+
+.ag-detail-facts dd { margin: 0; overflow-wrap: anywhere; }
+
+.ag-detail-notes {
+  margin-top: 16px;
+  max-height: 40vh;
+  overflow-y: auto;
+  padding: 10px 12px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ag-detail .agenda-hint { margin-top: 14px; }
+
+/* Lien d'une fiche (projet, tache) : pas de style commun pour .link hors de la boite de reception. */
+.ag-detail .link { color: var(--accent-text); text-decoration: none; }
+.ag-detail .link:hover { text-decoration: underline; }
+
+/* --- Repli en liste sur fenetre etroite ------------------------------------ */
+
+.agenda-list { display: flex; flex-direction: column; gap: 18px; }
+
+.ag-day-title {
+  margin: 0 0 8px;
+  padding: 0 2px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text-strong);
+}
+
+.ag-day-title::first-letter { text-transform: uppercase; }
+
+.ag-day.is-today .ag-day-title { color: var(--accent-text); }
+
+.ag-day-empty {
+  margin: 0;
+  padding: 0 2px;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.ag-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  text-align: left;
+  padding: 10px 13px;
+  margin-bottom: 7px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ev-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  /* translate (et non transform) : l'animation d'entree .anim-in fige transform. */
+  transition: translate var(--dur-fast) var(--ease-out), background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+
+.ag-row:hover {
+  translate: 0 -1px;
+  background: var(--surface-hover);
+  border-color: var(--accent-ring);
+  border-left-color: var(--ev-color);
+}
+
+.ag-row-time {
+  color: var(--ev-text);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  padding-top: 1px;
+}
+
+.ag-row-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ag-row-title { font-weight: 600; color: var(--text-strong); overflow-wrap: anywhere; }
+.ag-row-meta { color: var(--text-dim); font-size: 12.5px; overflow-wrap: anywhere; }
+
+/* --- Semaine sans rien ----------------------------------------------------- */
+
+.agenda-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.agenda-empty-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--text-strong);
+}
+
+.agenda-empty-hint {
+  margin: 0 0 8px;
+  color: var(--text-dim);
+  font-size: 13.5px;
+}
+
+/* --- Fenetre de saisie ----------------------------------------------------- */
+
+.agenda-actions { align-items: center; }
+.agenda-delete { display: flex; gap: 8px; margin-right: auto; flex-wrap: wrap; }
+
+/* --- Jours non travailles -------------------------------------------------- */
+
+/* Hachures communes a la legende et aux colonnes non travaillees. */
+.legend-off i,
+.ag-col.is-off::before {
+  background-image: repeating-linear-gradient(135deg, var(--line) 0 4px, transparent 4px 8px);
+}
+
+.legend-off i { background-color: transparent; border: 1px solid var(--line); }
+
+/* Le voile est un pseudo-element : il passe sous les evenements, poses apres lui. */
+.ag-col.is-off::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: var(--surface-sunken);
+}
+
+.ag-col.is-leave::before { background-color: var(--ag-leave-soft); }
+
+.ag-dayhead.is-off .ag-dayname,
+.ag-dayhead.is-off .ag-daynum { color: var(--text-dim); }
+
+.ag-off-reason {
+  max-width: 100%;
+  margin-top: 3px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ag-off-reason.is-leave {
+  color: var(--accent-2-text);
+  border-color: var(--accent-2);
+}
+
+.ag-day-title .ag-off-reason {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0 0 9px;
+}
+
+.ag-day.is-off .ag-day-title { color: var(--text-dim); }
+
+/* Conge en attente (Odoo) : hachures legeres, sans voile, le jour reste ouvre. */
+.ag-col.is-pending::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: repeating-linear-gradient(135deg, var(--line) 0 4px, transparent 4px 8px);
+}
+
+.ag-off-reason.is-pending {
+  border-style: dashed;
+  border-color: var(--accent-2);
+  color: var(--text-dim);
+}
+
+/* --- Liste des conges et feries -------------------------------------------- */
+
+.dayoff-box { margin-top: 22px; padding: 18px 20px; }
+
+.dayoff-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.dayoff-head .card-title { margin: 0; }
+
+.dayoff-error { margin: 10px 0 0; }
+
+.dayoff-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 14px 0 16px;
+}
+
+.dayoff-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 0 1 160px;
+  min-width: 0;
+}
+
+.dayoff-field.dayoff-title { flex: 1 1 220px; }
+
+.dayoff-field span {
+  color: var(--text-dim);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.dayoff-field input, .dayoff-field select { width: 100%; }
+
+.dayoff-list { display: flex; flex-direction: column; gap: 7px; }
+
+.dayoff-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 13px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent-2);
+  border-radius: var(--radius-sm);
+}
+
+.dayoff-row.dayoff-holiday { border-left-color: var(--p2); }
+
+.dayoff-period {
+  min-width: 132px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dayoff-body { display: flex; flex-direction: column; gap: 1px; flex: 1 1 auto; min-width: 0; }
+.dayoff-name { font-weight: 600; overflow-wrap: anywhere; }
+.dayoff-meta { color: var(--text-dim); font-size: 12px; }
+
+.dayoff-tag { color: var(--accent-2-text); border-color: var(--accent-2); }
+.dayoff-holiday .dayoff-tag { color: var(--p2-text); border-color: var(--p2); }
+
+.dayoff-row.is-pending { border-left-style: dashed; background: transparent; }
+.dayoff-row.is-pending .dayoff-name { color: var(--text-dim); }
+.dayoff-row.is-pending .dayoff-tag { border-style: dashed; }
+
+/* --- Elements importes d'un agenda externe --------------------------------- */
+
+.ag-event.is-readonly, .ag-row.is-readonly { border-style: dashed; border-left-style: solid; }
+
+.ag-source {
+  align-self: flex-start;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid var(--accent-2);
+  border-radius: 999px;
+  padding: 0 7px;
+  color: var(--accent-2-text);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.ag-row-source { margin-top: 2px; }
+
+.dayoff-source { color: var(--text-dim); border-color: var(--line-strong); }
+
+/* --- Telephone ------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .agenda-head .page-actions { flex: 1 1 100%; }
+  .ag-nav { flex: 1 1 100%; }
+  .ag-nav .btn-ghost { flex: 1; }
+  .ag-nav .icon-btn { min-width: 44px; min-height: 44px; }
+  .agenda-head .page-actions > .btn-primary { flex: 1 1 100%; }
+
+  .agenda-legend { gap: 6px 14px; margin-top: -8px; }
+
+  .dayoff-box { padding: 16px 14px; }
+  .dayoff-field, .dayoff-field.dayoff-title { flex: 1 1 100%; }
+  .dayoff-add .btn-primary { width: 100%; }
+  .dayoff-row { flex-wrap: wrap; gap: 6px 10px; }
+  .dayoff-period { min-width: 0; flex: 1 1 100%; }
+  .dayoff-head .btn-ghost { flex: 1 1 auto; }
+
+  .agenda-delete { flex: 1 1 100%; margin-right: 0; }
+  .agenda-delete .btn-ghost { flex: 1 1 auto; }
+}
+
+/* --- Glisser-deposer dans la grille (lot 8) ------------------------------------ */
+
+.ag-event.is-movable { cursor: grab; touch-action: none; }
+
+.ag-event.is-dragging {
+  z-index: 5;
+  cursor: grabbing;
+  opacity: 0.88;
+  box-shadow: var(--shadow-pop);
+  outline: 2px solid var(--accent);
+  transition: none;
+}

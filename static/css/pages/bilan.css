@@ -1,0 +1,400 @@
+/* NOMAIA — bilan de periode et rapport pour un chef de projet.
+ *
+ * Couleurs : jetons uniquement ; --pj-color vient des donnees du projet.
+ */
+
+/* --- En-tete : periode ----------------------------------------------------- */
+
+.bl-range { text-transform: none; }
+
+.bl-period {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.bl-custom { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.bl-custom[hidden] { display: none; }
+.bl-custom input { width: auto; }
+
+/* --- Graphiques : temps par projet et taches terminees, cote a cote ------------ */
+
+.bl-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.bl-chart .bar-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bl-chart-empty { margin: 0; color: var(--text-dim); font-size: 13px; }
+
+#bl-projects:not(:empty) { margin-top: 24px; }
+
+/* --- Heures planifiees et suivies : deux barres par jour, pleine largeur ------- */
+
+#bl-hours:not(:empty) { margin-top: 12px; }
+
+.bh-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.bh-legend { display: flex; gap: 14px; font-size: 12px; color: var(--text-dim); }
+.bh-key { display: inline-flex; align-items: center; gap: 6px; }
+.bh-dot { width: 10px; height: 4px; border-radius: 999px; }
+.bh-dot.is-planned, .bh-bar.is-planned > span { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.bh-dot.is-real, .bh-bar.is-real > span { background: var(--ok); }
+
+.bh-row {
+  display: grid;
+  grid-template-columns: 96px 1fr 128px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+.bh-row.is-off { opacity: 0.7; }
+
+.bh-day { font-size: 12px; color: var(--text); }
+.bh-day::first-letter { text-transform: uppercase; }
+
+.bh-bars { display: flex; flex-direction: column; gap: 3px; }
+
+.bh-bar {
+  height: 5px;
+  overflow: hidden;
+  background: var(--surface-sunken);
+  border-radius: 999px;
+}
+
+.bh-bar > span {
+  display: block;
+  height: 100%;
+  width: calc(var(--pct, 0) * 100%);
+  border-radius: inherit;
+}
+
+.bh-values {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.bh-values strong { color: var(--text); font-weight: 500; }
+
+.bh-totals {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  font-size: 12px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Barre « Sans projet » : elle se deplie sur les taches a rattacher. */
+.bl-unassigned > summary {
+  list-style: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--dur-fast) ease;
+}
+
+.bl-unassigned > summary::-webkit-details-marker { display: none; }
+.bl-unassigned > summary:hover { background: var(--surface-hover); }
+.bl-unassigned > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.bl-unassigned > summary .bar-label::after { content: " \25B8"; color: var(--accent-text); }
+.bl-unassigned[open] > summary .bar-label::after { content: " \25BE"; }
+
+.bl-unassigned-list {
+  margin: 4px 0 10px;
+  padding: 8px 0 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.bl-unassigned-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 13px;
+}
+
+.bl-unassigned-title { min-width: 0; overflow-wrap: anywhere; color: var(--text); }
+
+.bl-unassigned-min {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+.bl-unassigned-item select { min-width: 0; }
+.bl-unassigned-item .btn-ghost { min-height: 34px; }
+
+/* Imprime ouvert, le detail garde titres et durees, sans ses commandes. */
+@media print {
+  .bl-unassigned-item select { display: none; }
+}
+
+/* --- Journal des sessions Claude (en fin de page, replie) ------------------------ */
+
+.bl-log { margin-top: 26px; padding: 0; }
+
+.bl-log-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 14px 16px;
+  list-style: none;
+  cursor: pointer;
+  border-radius: var(--radius-lg);
+  transition: background-color var(--dur-fast) ease;
+}
+
+.bl-log-summary::-webkit-details-marker { display: none; }
+.bl-log-summary:hover { background: var(--surface-hover); }
+.bl-log-summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bl-log-summary::before { content: "\25B8"; color: var(--accent-text); }
+.bl-log[open] > .bl-log-summary::before { content: "\25BE"; }
+.bl-log[open] > .bl-log-summary { border-bottom: 1px solid var(--line-soft); border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+
+.bl-log-heading { font-weight: 650; color: var(--text-strong); }
+.bl-log-meta { font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+
+.bl-log-day { padding: 12px 16px 4px; }
+.bl-log-day + .bl-log-day { border-top: 1px solid var(--line-soft); }
+
+.bl-log-date {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.bl-log-list { margin: 0; padding: 0; list-style: none; }
+
+.bl-log-entry { padding: 6px 0 8px; }
+.bl-log-entry + .bl-log-entry { border-top: 1px dashed var(--line-soft); }
+
+.bl-log-line {
+  display: grid;
+  grid-template-columns: 44px 8px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.bl-log-time { font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+
+.bl-log-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pj-color, var(--text-faint));
+}
+
+.bl-log-task {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.bl-log-min {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-text);
+}
+
+/* Texte de l'entree : deux lignes, un clic le deplie en entier. */
+.bl-log-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 3px 0 0 72px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.bl-log-text.is-open { display: block; -webkit-line-clamp: none; }
+
+/* --- Analyse ------------------------------------------------------------------ */
+
+.estimation-note {
+  margin-top: 20px;
+  padding-left: 13px;
+  border-left: 2px solid var(--accent);
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.review-box { margin-top: 24px; padding: 20px 22px; }
+
+/* Titre d'un bloc d'analyse : petit titre de groupe, sans effet console. */
+.review-box .review-head {
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.review-summary { font-size: 15px; line-height: 1.65; color: var(--text); }
+
+.review-list { margin: 0; padding-left: 20px; color: var(--text-dim); }
+.review-list li { margin-bottom: 6px; }
+.review-list.good li::marker { color: var(--ok); }
+.review-list.bad li::marker { color: var(--p2); }
+
+.reco {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 8px;
+  padding: 11px 15px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+.reco span { color: var(--text-dim); font-size: 12.5px; }
+
+.focus {
+  margin-top: 20px;
+  padding: 13px 17px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-ring);
+  border-radius: var(--radius-md);
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+/* --- Historique ------------------------------------------------------------------ */
+
+.review-history { margin-top: 26px; }
+
+.review-history-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-history-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease, background-color var(--dur-fast) ease;
+}
+
+.review-history-item:hover { border-color: var(--accent-ring); background: var(--surface-hover); color: var(--text); }
+
+/* --- Projets de la periode --------------------------------------------------------- */
+
+.bl-projects {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: 12px;
+}
+
+.bl-project {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--pj-color, var(--accent));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  color: inherit;
+  text-decoration: none;
+  transition: translate var(--dur) var(--ease-out), border-color var(--dur) ease;
+}
+
+/* `translate` et non `transform` : .anim-in garde la main sur transform. */
+.bl-project:hover {
+  translate: 0 -2px;
+  border-color: var(--accent-ring);
+  border-top-color: var(--pj-color, var(--accent));
+}
+
+.bl-project:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bl-project .load-bar { margin-top: 0; }
+.bl-signal { color: var(--p2-text); }
+
+/* --- Rapport pour un chef de projet ------------------------------------------------- */
+
+.report-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.report-controls select { flex: 0 1 280px; min-width: 0; }
+.report-controls input { flex: 1 1 260px; min-width: 0; }
+.report-box .stats { margin-bottom: 12px; }
+.report-box textarea { width: 100%; font-size: 13.5px; line-height: 1.55; resize: vertical; }
+.report-box .modal-actions a { text-decoration: none; }
+
+/* --- Telephone ------------------------------------------------------------------------ */
+
+@media (max-width: 860px) {
+  .bl-period { width: 100%; }
+  .bl-period select { flex: 1 1 100%; }
+  .bl-custom { flex: 1 1 100%; }
+  .bl-custom input { flex: 1 1 130px; min-width: 0; }
+  #bl-generate { flex: 1 1 100%; }
+  .bl-charts { grid-template-columns: minmax(0, 1fr); }
+  .bh-row { grid-template-columns: 64px 1fr auto; gap: 8px; }
+  .bh-day, .bh-values { font-size: 11px; }
+  .bl-log-text { margin-left: 0; }
+  .review-box { padding: 16px; }
+  .report-controls select,
+  .report-controls input,
+  .report-controls .btn-ghost { flex: 1 1 100%; }
+}

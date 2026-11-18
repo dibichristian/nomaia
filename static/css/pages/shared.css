@@ -1,0 +1,129 @@
+/* NOMAIA — briques partagees par plusieurs pages (erreurs, barres, journal de travail,
+   navigation de periode, aide de formulaire, repli d'arbre). */
+
+/* Venu de pages/bilan.css */
+/* NOMAIA — bilan. */
+
+/* --- Bilan ---------------------------------------------------------------- */
+
+.bar-row { display: flex; align-items: center; gap: 11px; margin-bottom: 7px; }
+
+.bar-label {
+  width: 116px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+.bar-track {
+  flex: 1;
+  height: 15px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.bar-value {
+  width: 74px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.review-head {
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--text-strong);
+}
+
+/* --- Bilan : journal des sessions Claude ----------------------------------- */
+
+.work-log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.work-log li { overflow-wrap: anywhere; }
+
+.work-log-when { color: var(--text-dim); font-family: var(--mono); font-size: 11px; }
+
+.work-log-min { color: var(--accent-text); font-family: var(--mono); font-size: 11.5px; }
+
+.td-journal { margin-top: 6px; }
+
+.td-journal input[type="range"] { accent-color: var(--accent); }
+
+.td-journal .work-log { margin-top: 10px; max-height: 180px; overflow-y: auto; }
+
+.tree-fold-row { margin-top: 4px; }
+
+/* Venu de pages/config.css */
+.config-help {
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0 0 4px;
+}
+
+/* Venu de pages/inbox.css */
+.proposal-box, .created-box, .overflow-box {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 15px;
+}
+
+.proposal-box h3, .created-box h3, .overflow-box h3, .window-title {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin: 0 0 11px;
+  font-weight: 700;
+}
+
+.overflow-box h3 { color: var(--p2-text); }
+
+.error-box {
+  color: var(--p1-text);
+  border: 1px solid var(--p1);
+  background: var(--p1-soft);
+  border-radius: 9px;
+  padding: 11px 13px;
+  font-size: 12.5px;
+}
+
+/* Venu de pages/pilot.css */
+.pl-register-head .work-log-when { margin-left: auto; }
+
+/* Venu de pages/plan.css */
+.plan-nav { display: flex; align-items: center; gap: 9px; }
+
+.plan-nav span {
+  min-width: 172px;
+  text-transform: capitalize;
+  font-size: 13px;
+}
+
+@media (max-width: 860px) {
+  /* Plan : navigation entre les jours sur sa propre ligne. */
+  .plan-nav { flex: 1 1 100%; flex-wrap: wrap; }
+  .plan-nav span { min-width: 0; flex: 1; }
+}
+
+/* Venu de pages/projets.css */
+.pj-panel .bar-label { width: 62px; }
+
+.pj-panel .bar-value { width: auto; white-space: nowrap; }

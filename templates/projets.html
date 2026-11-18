@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% set page_styles = ["pilot", "projets"] %}
+
+{% block title %}NOMAIA — Projets{% endblock %}
+
+{% block header_date %}<span id="header-date" data-today="{{ today }}"></span>{% endblock %}
+
+{% block content %}
+  <header class="page-head">
+    <div>
+      <p class="page-kicker">Pilotage</p>
+      <h1 class="page-title">Projets</h1>
+    </div>
+    <div class="page-actions pj-filters" id="pj-filters" role="toolbar" aria-label="Filtre et affichage des projets">
+      <button type="button" class="chip is-on" data-filter="current" aria-pressed="true">En cours</button>
+      <button type="button" class="chip" data-filter="risk" aria-pressed="false">À risque</button>
+      <button type="button" class="chip" data-filter="done" aria-pressed="false">Terminés</button>
+      <button type="button" class="chip" data-filter="all" aria-pressed="false">Tous</button>
+      <span class="pl-chip-sep" aria-hidden="true"></span>
+      <button type="button" class="chip is-on" data-view="table">Tableau</button>
+      <button type="button" class="chip" data-view="cards">Cartes</button>
+    </div>
+  </header>
+
+  <section class="stats pj-kpis" id="pj-kpis"></section>
+
+  <section class="pl-charts">
+    <div class="pj-panel">
+      <h2 class="card-title">Statut des tâches · projets actifs</h2>
+      <div id="pl-donut"></div>
+    </div>
+    <div class="pj-panel">
+      <h2 class="card-title">Statut des tâches par projet</h2>
+      <div id="pl-stacks"></div>
+    </div>
+  </section>
+
+  <section class="pj-toolbar">
+    <form class="quick-add pj-add" id="project-add" autocomplete="off">
+      <input type="text" id="pr-name" placeholder="Nouveau projet (alpha, orion, brightjet…)" maxlength="120" required>
+      <input type="color" id="pr-color" value="#6366f1" title="Couleur du projet">
+      <input type="date" id="pr-deadline" title="Échéance du projet">
+      <label class="check-inline" title="Rattache les tâches ouvertes sans projet dont le titre cite ce nom">
+        <input type="checkbox" id="pr-attach" checked>
+        Rattacher les tâches existantes
+      </label>
+      <button type="submit" class="btn-primary">Créer</button>
+    </form>
+  </section>
+
+  <section id="project-list">
+    <p class="empty">Chargement…</p>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/pilot.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/projets.js') }}"></script>
+{% endblock %}

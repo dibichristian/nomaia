@@ -1,0 +1,384 @@
+/* NOMAIA — listes de taches, saisie rapide, fiche de detail (pages Taches, Plan, Projet).
+ *
+ * Feuille commune a toutes les pages (chargee par layout.html) : les lignes
+ * .task et .slot servent aussi a la page Projet. Couleurs : jetons seulement,
+ * pour que les deux themes suivent sans regle dediee.
+ */
+
+/* --- Saisie rapide -------------------------------------------------------- */
+
+.quick-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 24px;
+}
+
+.quick-add input[type="text"] { flex: 1 1 260px; }
+
+/* --- Filtre de la liste des taches ---------------------------------------- */
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+/* Dans l'en-tete de page, le filtre s'aligne sur les boutons d'action. */
+.page-actions .filter-bar { margin-bottom: 0; }
+
+.filter-bar label {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.filter-bar select { width: auto; min-width: 170px; min-height: 38px; }
+
+/* Case a cocher posee dans une barre de saisie, alignee sur les champs. */
+.check-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-dim);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.check-inline input { width: auto; }
+
+/* --- Listes de taches ----------------------------------------------------- */
+
+.group { margin-bottom: 26px; }
+
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Petit titre de groupe : seul endroit ou les capitales espacees restent. */
+.group-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.group-head::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line-soft);
+}
+
+.group-count {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.group-late .group-title { color: var(--p1-text); }
+
+/* .project (page Projets) garde le survol de components.css. */
+.task, .slot, .project {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 11px 15px;
+  margin-bottom: 7px;
+}
+
+/* Survol : fond plus clair et leger glissement. `translate` (et non
+   `transform`) compose avec l'animation d'entree, qui fige `transform`. */
+.task, .slot {
+  gap: 12px;
+  padding: 10px 14px 10px 18px;
+  margin-bottom: 8px;
+  border-radius: var(--radius-md);
+  transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease,
+    translate var(--dur-fast) var(--ease-out);
+}
+
+.task:hover, .slot:hover {
+  background: var(--surface-hover);
+  translate: 2px 0;
+}
+
+/* Barre de priorite a gauche de la ligne : P3 par defaut. */
+.task::before, .slot::before, .proposed::before {
+  content: "";
+  position: absolute;
+  left: 5px; top: 10px; bottom: 10px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--p3);
+}
+
+.task[data-priority="1"]::before, .slot[data-priority="1"]::before, .proposed[data-priority="1"]::before {
+  background: var(--p1);
+}
+.task[data-priority="2"]::before, .slot[data-priority="2"]::before, .proposed[data-priority="2"]::before {
+  background: var(--p2);
+}
+.task[data-priority="4"]::before, .slot[data-priority="4"]::before, .proposed[data-priority="4"]::before {
+  background: var(--p4);
+}
+
+/* Tache terminee : effacee par la couleur, pas par l'opacite, pour que le
+   texte garde un contraste lisible dans les deux themes. */
+.task.done {
+  background: var(--surface-sunken);
+  box-shadow: none;
+}
+
+.task.done::before { opacity: 0.35; }
+.task.done .task-title { color: var(--text-dim); text-decoration: line-through; }
+
+/* Zone de clic elargie autour de la case a cocher. */
+.check-hit {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: -4px -6px -4px -4px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.check-hit:hover { background: var(--accent-soft); }
+
+.task-check {
+  width: 18px; height: 18px;
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.task-body, .slot-body, .project-body { flex: 1; min-width: 0; }
+
+.task-title, .slot-title {
+  display: block;
+  color: var(--text-strong);
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.task-meta, .slot-meta, .project-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 4px;
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+
+/* Pastille de projet dans une ligne de tache : plus discrete que celle de la
+   page Projets, elle doit cohabiter avec les autres etiquettes sans dominer. */
+.task-project { display: inline-flex; align-items: center; gap: 6px; }
+
+.task-project .project-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  flex: none;
+  border-radius: 999px;
+}
+
+/* Etiquette de ligne : meme dessin que .badge (components.css). */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  color: var(--text-dim);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tag-late { background: var(--p1-soft); color: var(--p1-text); }
+.tag-ai { background: var(--accent-soft); color: var(--accent-text); }
+.tag-review { background: var(--p2-soft); color: var(--p2-text); }
+.tag-shifted { background: var(--p2-soft); color: var(--p2-text); font-weight: 600; }
+
+.task-actions {
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity var(--dur-fast) ease;
+}
+
+.task:hover .task-actions,
+.task:focus-within .task-actions { opacity: 1; }
+
+/* Ecran tactile : pas de survol, les actions restent visibles. */
+@media (hover: none) {
+  .task-actions { opacity: 1; }
+}
+
+/* --- Arborescence (parent > sous-taches) : pages Taches et Projet ---------- */
+
+/* Retrait par niveau, plafonne sur petit ecran pour garder la ligne lisible. */
+.task.is-subtask, .slot.is-subtask {
+  margin-left: calc(var(--depth, 0) * 26px);
+}
+
+/* Coude qui rattache la sous-tache a la ligne du dessus. */
+.task.is-subtask::after, .slot.is-subtask::after {
+  content: "";
+  position: absolute;
+  left: -14px; top: -6px;
+  width: 10px; height: calc(50% + 6px);
+  border-left: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  border-bottom-left-radius: 6px;
+  pointer-events: none;
+}
+
+/* Parent clos qui garde des sous-taches ouvertes : en-tete de groupe,
+   ni barre ni effacement. */
+.task.done.is-holder { background: var(--surface); }
+.task.done.is-holder .task-title { text-decoration: none; color: var(--text-dim); }
+.slot.is-done.is-holder .slot-title { text-decoration: none; color: var(--text-dim); }
+
+.tree-fold {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.tree-fold:hover { border-color: var(--line-strong); }
+.tree-caret { font-size: 10px; }
+
+/* --- Plan : ordre a la main, detail, jours passes ------------------------- */
+
+.plan-hint {
+  margin: 0 0 12px;
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+
+.slot-title.as-link {
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: var(--text-strong);
+  text-align: left;
+  cursor: pointer;
+}
+
+.slot-title.as-link:hover { color: var(--accent-text); text-decoration: underline; }
+
+.slot[draggable="true"] { cursor: grab; }
+
+/* L'animation d'entree fige l'opacite : on la retire pendant le glisser. */
+.slot.is-dragging { animation: none; opacity: 0.45; }
+.slot.drop-before { box-shadow: inset 0 3px 0 var(--accent); }
+.slot.drop-after { box-shadow: inset 0 -3px 0 var(--accent); }
+
+.drag-handle {
+  color: var(--text-dim);
+  font-size: 12px;
+  letter-spacing: -2px;
+  user-select: none;
+}
+
+.slot.is-pinned { border-color: var(--line-strong); }
+.icon-btn.pin-on { color: var(--accent-text); border-color: var(--accent-ring); background: var(--accent-soft); }
+
+.slot-now { flex-shrink: 0; min-height: 32px; padding: 0 12px; font-size: 13px; }
+
+.slot.is-done .slot-title { text-decoration: line-through; color: var(--text-dim); }
+
+/* --- Fiche de detail d'une tache (_task_detail.html) ---------------------- */
+
+.task-detail { width: min(640px, 94vw); }
+
+.td-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.td-head h2 { margin: 0; }
+
+/* Avancement et etapes : sections separees du formulaire par un trait. */
+.td-journal, .td-steps, .td-attachments {
+  margin-top: 18px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.td-journal .work-log-when { color: var(--text-dim); }
+
+.td-steps .plan-hint { margin: 0 0 8px; }
+
+/* Ligne d'etape : un label, d'ou les surcharges du style des labels de .modal. */
+.td-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 4px 8px;
+  margin: 0 -8px !important;
+  border-radius: var(--radius-sm);
+  color: var(--text) !important;
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  cursor: pointer;
+}
+
+.td-step:hover { background: var(--surface-hover); }
+.td-step input { width: auto !important; flex: none; }
+.td-step.is-done span { text-decoration: line-through; color: var(--text-dim); }
+
+.td-step-add { display: flex; gap: 8px; margin-top: 8px; }
+.td-step-add input[type="text"] { flex: 1; min-width: 0; }
+.modal .td-step-add input[type="number"] { width: 90px; flex: none; }
+
+@media (max-width: 860px) {
+  /* Taches : actions sous le titre, qui garde toute la largeur. */
+  .task { flex-wrap: wrap; }
+  .task-actions { flex: 1 1 100%; justify-content: flex-end; flex-wrap: wrap; }
+
+  /* Cibles tactiles : la case garde 38 px de zone de clic. */
+  .check-hit { width: 38px; height: 38px; margin: -6px -6px -6px -8px; }
+  .task-check { width: 20px; height: 20px; }
+
+  .task.is-subtask, .slot.is-subtask {
+    margin-left: calc(min(var(--depth, 0), 3) * 14px);
+  }
+
+  .task.is-subtask::after, .slot.is-subtask::after { left: -9px; width: 6px; }
+
+  .page-actions .filter-bar { flex: 1 1 100%; }
+  .page-actions .filter-bar select { flex: 1; min-width: 0; }
+
+  .td-step { min-height: 44px; }
+}

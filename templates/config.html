@@ -1,0 +1,658 @@
+{% extends "layout.html" %}
+{% set page_styles = ["config"] %}
+
+{% block title %}NOMAIA — Configuration{% endblock %}
+
+{% block header_date %}<span id="header-date" data-today="{{ today }}"></span>{% endblock %}
+
+{% block content %}
+  <header class="page-head">
+    <div>
+      <p class="page-kicker">Réglages de NOMAIA et de cet appareil</p>
+      <h1 class="page-title">Configuration</h1>
+    </div>
+  </header>
+
+  <div class="cfg-layout">
+    <nav class="cfg-nav" aria-label="Sections de la configuration">
+      <a class="cfg-nav-link" href="#general" data-group="general"><span class="cfg-nav-label">Général</span><span class="cfg-nav-hint">Affichage de cet appareil et état du système.</span></a>
+      <a class="cfg-nav-link" href="#intelligence" data-group="intelligence"><span class="cfg-nav-label">Intelligence</span><span class="cfg-nav-hint">Moteur, coût en jetons, conversation et triage automatique.</span></a>
+      <a class="cfg-nav-link" href="#journee" data-group="journee"><span class="cfg-nav-label">Journée et agenda</span><span class="cfg-nav-hint">Horaires, rendez-vous fixes, rappels et agendas importés.</span></a>
+      <a class="cfg-nav-link" href="#suivi" data-group="suivi"><span class="cfg-nav-label">Suivi et relances</span><span class="cfg-nav-hint">Ce que NOMAIA signale de lui-même, et qui il relance.</span></a>
+      <a class="cfg-nav-link" href="#connexions" data-group="connexions"><span class="cfg-nav-label">Connexions</span><span class="cfg-nav-hint">Odoo, mails Outlook, sessions Claude Code et accès depuis le téléphone.</span></a>
+      <a class="cfg-nav-link" href="#consommation" data-group="consommation"><span class="cfg-nav-label">Consommation</span><span class="cfg-nav-hint">Jetons et appels des 30 derniers jours.</span></a>
+    </nav>
+
+    <div class="cfg-panels">
+      <section class="cfg-group" id="cfg-general" data-group="general" aria-labelledby="cfg-general-title">
+        <header class="cfg-group-head"><h2 class="cfg-group-title" tabindex="-1" id="cfg-general-title">Général</h2><p class="cfg-group-hint">Affichage de cet appareil et état du système.</p></header>
+        <div class="config-grid">
+
+        <article class="card config-card">
+          <h2 class="card-title">Affichage</h2>
+          <p class="config-help">Réglages propres à cet appareil : le PC et le téléphone gardent chacun les leurs.
+             Le thème se change aussi depuis l'en-tête ou la palette (Ctrl+K).</p>
+          <div class="pref-list">
+            <button type="button" class="switch" role="switch" data-pref="theme" data-on="light" data-off="dark">
+              <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+              Thème clair
+            </button>
+            <button type="button" class="switch" role="switch" data-pref="ambient" data-on="on" data-off="off">
+              <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+              Fond animé (aurore qui dérive lentement)
+            </button>
+            <button type="button" class="switch" role="switch" data-pref="motion" data-on="reduced" data-off="full">
+              <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+              Réduire les animations
+            </button>
+          </div>
+        </article>
+
+        <article class="card config-card">
+          <h2 class="card-title">Système</h2>
+          <dl class="config-facts" id="system-facts"></dl>
+        </article>
+
+        </div>
+      </section>
+
+      <section class="cfg-group" id="cfg-intelligence" data-group="intelligence" aria-labelledby="cfg-intelligence-title">
+        <header class="cfg-group-head"><h2 class="cfg-group-title" tabindex="-1" id="cfg-intelligence-title">Intelligence</h2><p class="cfg-group-hint">Moteur, coût en jetons, conversation et triage automatique.</p></header>
+        <div class="config-grid">
+
+        <article class="card config-card">
+          <h2 class="card-title">Moteur d'intelligence</h2>
+          <p class="config-help" id="provider-help"></p>
+          <p class="config-help model-warning" id="model-warning" hidden></p>
+
+          <label for="cf-provider">Fournisseur</label>
+          <select id="cf-provider"></select>
+
+          <label for="cf-model">Modèle</label>
+          <select id="cf-model"></select>
+
+          <div id="cf-key-block" hidden>
+            <label for="cf-key">Clé d'accès <span id="cf-key-state" class="key-state"></span></label>
+            <input type="password" id="cf-key" placeholder="Colle la clé, ou laisse vide pour conserver">
+          </div>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-timeout">Délai maximal (s)</label>
+              <input type="number" id="cf-timeout" min="15" max="600" step="5">
+            </div>
+            <div>
+              <label for="cf-claude-path">Chemin claude (vide = auto)</label>
+              <input type="text" id="cf-claude-path" placeholder="détection automatique">
+            </div>
+          </div>
+
+          <label for="cf-claude-dir">Dossier de configuration Claude Code (vide = par défaut)</label>
+          <input type="text" id="cf-claude-dir" placeholder="ex. C:\Users\moi\.claude-pro">
+          <p class="config-help">À renseigner si plusieurs comptes Claude Code cohabitent sur
+             la machine. Lancé depuis l'icône, NOMAIA n'hérite pas de la variable
+             <code>CLAUDE_CONFIG_DIR</code> du terminal et utiliserait le compte par défaut,
+             dont la session a pu expirer.</p>
+
+          <div class="config-actions">
+            <button type="button" class="btn-ghost" id="cf-test">Tester la connexion</button>
+            <button type="button" class="btn-primary" data-save="moteur">Enregistrer</button>
+          </div>
+          <p class="config-result" id="cf-test-result" hidden></p>
+        </article>
+
+        <article class="card config-card">
+          <h2 class="card-title">Économie de jetons</h2>
+          <p class="config-help">Chaque tâche listée en contexte coûte une quinzaine de jetons
+             à chaque triage. Réduire ces plafonds réduit la facture, au prix d'une détection
+             de doublon un peu moins fine.</p>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-ctx-tasks">Tâches injectées en contexte</label>
+              <input type="number" id="cf-ctx-tasks" min="0" max="60">
+            </div>
+            <div>
+              <label for="cf-ctx-turns">Tours de dialogue rappelés</label>
+              <input type="number" id="cf-ctx-turns" min="2" max="40">
+            </div>
+          </div>
+
+          <div class="config-actions">
+            <button type="button" class="btn-primary" data-save="economie">Enregistrer</button>
+          </div>
+        </article>
+
+        <article class="card config-card">
+          <h2 class="card-title">Conversation</h2>
+          <p class="config-help">Le chat est séparé du triage : répondre à un message
+             enchaîne jusqu'à plusieurs appels au moteur. Claude Code recharge tout son
+             contexte à chaque appel (~50 000 jetons) et rend la conversation lente —
+             préfère une interface de programmation.</p>
+
+          <label for="cf-chat-provider">Moteur de la conversation</label>
+          <select id="cf-chat-provider"></select>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-chat-turns">Tours rappelés au modèle</label>
+              <input type="number" id="cf-chat-turns" min="2" max="40">
+            </div>
+            <div>
+              <label for="cf-chat-steps">Outils par message</label>
+              <input type="number" id="cf-chat-steps" min="1" max="10">
+            </div>
+          </div>
+
+          <label for="cf-chat-tg">Message Telegram libre</label>
+          <select id="cf-chat-tg">
+            <option value="1">NOMAIA répond en conversation</option>
+            <option value="0">Toujours déposer au triage</option>
+          </select>
+
+          <label for="cf-chat-chars">Longueur au-delà de laquelle le triage reprend la main</label>
+          <input type="number" id="cf-chat-chars" min="80" max="4000">
+          <p class="config-help">Un message plus long qu'un paragraphe est un dépôt, pas une
+             question : il repart au triage. Les images aussi, toujours.</p>
+
+          <label for="cf-voice">Vocaux Telegram</label>
+          <select id="cf-voice">
+            <option value="1">Transcrits sur le PC, puis traités comme un message</option>
+            <option value="0">Refusés</option>
+          </select>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-voice-model">Modèle de transcription</label>
+              <select id="cf-voice-model">
+                <option value="tiny">tiny — rapide, approximatif</option>
+                <option value="base">base — compromis</option>
+                <option value="small">small — fiable en français</option>
+              </select>
+            </div>
+            <div>
+              <label for="cf-voice-lang">Langue</label>
+              <select id="cf-voice-lang">
+                <option value="fr">Français</option>
+                <option value="en">Anglais</option>
+                <option value="">Détection automatique</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="cf-voice-max">Durée maximale d'un vocal (secondes)</label>
+          <input type="number" id="cf-voice-max" min="10" max="900">
+          <p class="config-help" id="cf-voice-state">Rien ne quitte le poste. Le modèle est
+             téléchargé au premier vocal, puis libéré de la mémoire après dix minutes sans usage.</p>
+
+          <div class="config-actions">
+            <button type="button" class="btn-primary" data-save="conversation">Enregistrer</button>
+          </div>
+        </article>
+
+        <article class="card config-card">
+          <h2 class="card-title">Autonomie du triage</h2>
+          <p class="config-help">Au-dessus du premier seuil et sans question en suspens,
+             NOMAIA crée les tâches seul. En dessous du second, il attend ta validation.</p>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-auto">Création automatique dès</label>
+              <input type="number" id="cf-auto" min="0" max="1" step="0.05">
+            </div>
+            <div>
+              <label for="cf-manual">Proposition à partir de</label>
+              <input type="number" id="cf-manual" min="0" max="1" step="0.05">
+            </div>
+          </div>
+
+          <label for="cf-calibration">Calibrage des durées</label>
+          <select id="cf-calibration">
+            <option value="1">Corriger d'après le temps chronométré</option>
+            <option value="0">Laisser l'IA estimer à l'aveugle</option>
+          </select>
+
+          <div class="config-actions">
+            <button type="button" class="btn-primary" data-save="autonomie">Enregistrer</button>
+          </div>
+        </article>
+
+        </div>
+      </section>
+
+      <section class="cfg-group" id="cfg-journee" data-group="journee" aria-labelledby="cfg-journee-title">
+        <header class="cfg-group-head"><h2 class="cfg-group-title" tabindex="-1" id="cfg-journee-title">Journée et agenda</h2><p class="cfg-group-hint">Horaires, rendez-vous fixes, rappels et agendas importés.</p></header>
+        <div class="config-grid">
+
+        <article class="card config-card">
+          <h2 class="card-title">Journée de travail</h2>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-work-start">Début</label>
+              <input type="time" id="cf-work-start">
+            </div>
+            <div>
+              <label for="cf-work-end">Fin</label>
+              <input type="time" id="cf-work-end">
+            </div>
+          </div>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-lunch-start">Pause déjeuner</label>
+              <input type="time" id="cf-lunch-start">
+            </div>
+            <div>
+              <label for="cf-lunch-end">Reprise</label>
+              <input type="time" id="cf-lunch-end">
+            </div>
+          </div>
+
+          <label for="cf-perso-enabled">Horaires de l'espace perso</label>
+          <select id="cf-perso-enabled">
+            <option value="0">Mêmes horaires que le pro (plan mélangé)</option>
+            <option value="1">Perso le soir et les jours non travaillés seulement</option>
+          </select>
+          <div class="modal-row">
+            <div>
+              <label for="cf-perso-start">Perso en semaine, de</label>
+              <input type="time" id="cf-perso-start">
+            </div>
+            <div>
+              <label for="cf-perso-end">à</label>
+              <input type="time" id="cf-perso-end">
+            </div>
+          </div>
+          <div class="modal-row">
+            <div>
+              <label for="cf-perso-offday-start">Perso les jours non travaillés, de</label>
+              <input type="time" id="cf-perso-offday-start">
+            </div>
+            <div>
+              <label for="cf-perso-offday-end">à</label>
+              <input type="time" id="cf-perso-offday-end">
+            </div>
+          </div>
+          <p class="config-help">Activé, le plan du jour réserve les heures de travail au pro et place
+             le perso le soir et les jours non travaillés (week-end, congés).</p>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-buffer">Marge sur estimations (%)</label>
+              <input type="number" id="cf-buffer" min="0" max="100" step="5">
+            </div>
+            <div>
+              <label for="cf-horizon">Horizon planifié (jours)</label>
+              <input type="number" id="cf-horizon" min="0" max="30">
+            </div>
+          </div>
+
+          <label id="cf-work-days-label">Jours travaillés</label>
+          <div class="weekday-picks" id="cf-work-days" role="group" aria-labelledby="cf-work-days-label">
+            <label class="weekday-pick"><input type="checkbox" value="0">Lun</label>
+            <label class="weekday-pick"><input type="checkbox" value="1">Mar</label>
+            <label class="weekday-pick"><input type="checkbox" value="2">Mer</label>
+            <label class="weekday-pick"><input type="checkbox" value="3">Jeu</label>
+            <label class="weekday-pick"><input type="checkbox" value="4">Ven</label>
+            <label class="weekday-pick"><input type="checkbox" value="5">Sam</label>
+            <label class="weekday-pick"><input type="checkbox" value="6">Dim</label>
+          </div>
+
+          <label for="cf-holiday-country">Jours fériés</label>
+          <select id="cf-holiday-country"></select>
+          <p class="config-help">Les jours non cochés et les fériés du pays choisi sont exclus
+             du plan. Congés et fêtes religieuses se saisissent dans l'agenda.</p>
+
+          <div class="config-actions">
+            <button type="button" class="btn-primary" data-save="journee">Enregistrer</button>
+          </div>
+        </article>
+
+        <article class="card config-card">
+          <h2 class="card-title">Rendez-vous quotidiens</h2>
+          <p class="config-help">NOMAIA pousse le plan du jour le matin et le point de fin
+             de journée le soir, sur Telegram et en bulle Windows. Un rendez-vous manqué
+             de plus de trois heures est passé sous silence plutôt que rattrapé.</p>
+
+          <label for="cf-hb-enabled">État</label>
+          <select id="cf-hb-enabled">
+            <option value="1">Actifs</option>
+            <option value="0">Désactivés</option>
+          </select>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-hb-morning">Point du matin</label>
+              <input type="time" id="cf-hb-morning">
+            </div>
+            <div>
+              <label for="cf-hb-evening">Point du soir</label>
+              <input type="time" id="cf-hb-evening">
+            </div>
+          </div>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-drift">Alerte de dérive (jours de retard)</label>
+              <input type="number" id="cf-drift" min="1" max="60">
+            </div>
+            <div>
+              <label for="cf-auto-project">Projets déduits par NOMAIA</label>
+              <select id="cf-auto-project">
+                <option value="1">Création automatique</option>
+                <option value="0">Projets créés à la main</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="config-actions">
+            <button type="button" class="btn-primary" data-save="rendezvous">Enregistrer</button>
+          </div>
+        </article>
+
+        <article class="card config-card">
+          <h2 class="card-title">Rappel avant réunion</h2>
+          <p class="config-help">NOMAIA prévient avant chaque rendez-vous de l'agenda, sur
+             Telegram et en bulle Windows. Les absences ne déclenchent rien.</p>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-ev-reminder">Rappel</label>
+              <select id="cf-ev-reminder">
+                <option value="1">Activé</option>
+                <option value="0">Désactivé</option>
+              </select>
+            </div>
+            <div>
+              <label for="cf-ev-delay">Combien de minutes avant</label>
+              <input type="number" id="cf-ev-delay" min="1" max="120">
+            </div>
+          </div>
+
+          <div class="config-actions">
+            <button type="button" class="btn-primary" data-save="rappel">Enregistrer</button>
+          </div>
+        </article>
+
+        <article class="card config-card">
+          <h2 class="card-title">Agendas externes</h2>
+          <p class="config-help">Outlook web &gt; Paramètres &gt; Calendrier &gt; Calendriers
+             partagés &gt; Publier un calendrier (Peut afficher tous les détails), puis copie
+             le lien ICS. Ce lien donne accès à ton agenda : NOMAIA le chiffre et ne
+             l'affiche plus.</p>
+
+          <div class="cal-sources" id="cal-sources">
+            <p class="cal-empty">Chargement…</p>
+          </div>
+          <p class="error-box cal-error" id="cal-error" hidden></p>
+
+          <div class="config-actions" id="cal-odoo-box" hidden>
+            <button type="button" class="btn-ghost" id="cal-add-odoo">Ajouter l'agenda Odoo</button>
+          </div>
+          <p class="config-help" id="cal-odoo-help" hidden>Congés, fériés de la société et
+             réunions de l'Odoo des tâches, en lecture seule. Aucune adresse à saisir : la
+             connexion est celle de Connexions &gt; Tâches Odoo.</p>
+
+          <label for="cal-name">Nom du calendrier</label>
+          <input type="text" id="cal-name" maxlength="80" value="Outlook" placeholder="Outlook">
+
+          <label for="cal-url">Lien ICS publié</label>
+          <input type="text" id="cal-url" maxlength="2000" autocomplete="off" spellcheck="false"
+                 placeholder="https://outlook.office365.com/owa/calendar/…/calendar.ics">
+
+          <div class="config-actions">
+            <button type="button" class="btn-ghost" id="cal-add">Ajouter</button>
+          </div>
+          <p class="config-result" id="cal-add-result" hidden></p>
+
+          <label for="cf-cal-sync">Relire toutes les N minutes</label>
+          <input type="number" id="cf-cal-sync" min="5" max="240">
+          <p class="config-help">Lecture seule : les éléments importés se modifient dans
+             Outlook ou Odoo, pas dans NOMAIA.</p>
+
+          <div class="config-actions">
+            <button type="button" class="btn-primary" data-save="agendas">Enregistrer</button>
+          </div>
+        </article>
+
+        </div>
+      </section>
+
+      <section class="cfg-group" id="cfg-suivi" data-group="suivi" aria-labelledby="cfg-suivi-title">
+        <header class="cfg-group-head"><h2 class="cfg-group-title" tabindex="-1" id="cfg-suivi-title">Suivi et relances</h2><p class="cfg-group-hint">Ce que NOMAIA signale de lui-même, et qui il relance.</p></header>
+        <div class="config-grid">
+
+        <article class="card config-card">
+          <h2 class="card-title">Proactivité</h2>
+          <p class="config-help">NOMAIA signale ce qui va déraper avant que ce soit fait :
+             échéances que le temps libre ne permet plus de tenir, préparation des réunions,
+             tâches qui dorment, validations oubliées, projets à l'arrêt. Rien ne part un
+             jour de repos.</p>
+
+          <label for="cf-foresight">Alertes anticipées</label>
+          <select id="cf-foresight">
+            <option value="1">Activées</option>
+            <option value="0">Désactivées</option>
+          </select>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-risk-horizon">Échéances surveillées (jours ouvrés)</label>
+              <input type="number" id="cf-risk-horizon" min="1" max="30">
+            </div>
+            <div>
+              <label for="cf-validation-hours">Rappel de validation après (heures)</label>
+              <input type="number" id="cf-validation-hours" min="2" max="168">
+            </div>
+          </div>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-dormant-days">Tâche dormante après (jours)</label>
+              <input type="number" id="cf-dormant-days" min="7" max="180">
+            </div>
+            <div>
+              <label for="cf-idle-days">Projet à l'arrêt après (jours)</label>
+              <input type="number" id="cf-idle-days" min="3" max="90">
+            </div>
+          </div>
+
+          <div class="config-actions">
+            <button type="button" class="btn-primary" data-save="proactivite">Enregistrer</button>
+          </div>
+        </article>
+
+        <article class="card config-card">
+          <h2 class="card-title">Interlocuteurs et relances</h2>
+          <p class="config-help">Le triage peut identifier les personnes citées et ce qu'elles
+             te doivent. Coupé, il se comporte exactement comme avant : aucune personne créée,
+             aucune attente enregistrée.</p>
+
+          <label for="cf-extract">Extraction par le triage</label>
+          <select id="cf-extract">
+            <option value="1">Activée</option>
+            <option value="0">Désactivée</option>
+          </select>
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-nudge-after">Relancer après (jours d'attente)</label>
+              <input type="number" id="cf-nudge-after" min="1" max="60">
+            </div>
+            <div>
+              <label for="cf-nudge-quiet">Silence entre deux relances (jours)</label>
+              <input type="number" id="cf-nudge-quiet" min="1" max="30">
+            </div>
+          </div>
+          <p class="config-help">Une attente dont l'échéance est passée est signalée sans
+             attendre le premier délai. Le second évite que la même ligne revienne chaque
+             matin jusqu'à devenir un bruit.</p>
+
+          <div class="config-actions">
+            <button type="button" class="btn-primary" data-save="interlocuteurs">Enregistrer</button>
+          </div>
+        </article>
+
+        </div>
+      </section>
+
+      <section class="cfg-group" id="cfg-connexions" data-group="connexions" aria-labelledby="cfg-connexions-title">
+        <header class="cfg-group-head"><h2 class="cfg-group-title" tabindex="-1" id="cfg-connexions-title">Connexions</h2><p class="cfg-group-hint">Odoo, mails Outlook, sessions Claude Code et accès depuis le téléphone.</p></header>
+        <div class="config-grid">
+
+        <article class="card config-card">
+          <h2 class="card-title">Tâches Odoo</h2>
+          <p class="config-help">Importe les tâches ouvertes qui te sont assignées dans Odoo, avec
+             leurs sous-tâches et leur projet. Lecture seule : rien n'est écrit dans Odoo. Le titre,
+             l'échéance, le projet et la tâche parente suivent Odoo à chaque synchronisation.</p>
+
+          <label for="cf-odoo-url">Adresse du serveur</label>
+          <input type="text" id="cf-odoo-url" maxlength="300" spellcheck="false"
+                 placeholder="https://ma-base.odoo.com">
+
+          <div class="modal-row">
+            <div>
+              <label for="cf-odoo-db">Base</label>
+              <input type="text" id="cf-odoo-db" maxlength="120" spellcheck="false">
+            </div>
+            <div>
+              <label for="cf-odoo-protocol">Protocole</label>
+              <select id="cf-odoo-protocol">
+                <option value="json2">JSON-2 (clé API seule)</option>
+                <option value="jsonrpc">JSON-RPC (login + clé)</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="cf-odoo-login">Login (JSON-RPC seulement)</label>
+          <input type="text" id="cf-odoo-login" maxlength="200" spellcheck="false">
+
+          <label for="cf-odoo-key">Clé API <span id="cf-odoo-key-state" class="key-state"></span></label>
+          <input type="password" id="cf-odoo-key" placeholder="Préférences Odoo &gt; Sécurité du compte &gt; Clé API">
+
+          <p class="config-help" id="odoo-state">—</p>
+
+          <div class="config-actions">
+            <button type="button" class="btn-ghost" data-save="odoo">Enregistrer</button>
+            <button type="button" class="btn-ghost" id="odoo-test">Tester</button>
+            <button type="button" class="btn-primary" id="odoo-sync">Synchroniser</button>
+          </div>
+          <p class="config-result" id="odoo-result" hidden></p>
+        </article>
+
+        <article class="card config-card">
+          <h2 class="card-title">Mails Outlook (via Claude)</h2>
+          <p class="config-help">Claude Code lit ta boîte Outlook avec le connecteur Microsoft 365
+             branché sur ton compte Claude, toutes les heures pendant tes heures de travail. Seuls
+             les mails d'un interlocuteur connu ou citant un projet actif arrivent dans la boîte de
+             réception, et leurs propositions attendent toujours ta validation. Lecture seule :
+             aucun accès n'est stocké ici. Environ 0,12 $ par passage, imputé à l'abonnement.</p>
+
+          <label for="cf-mail-enabled">Lecture automatique</label>
+          <select id="cf-mail-enabled">
+            <option value="1">Active</option>
+            <option value="0">Désactivée</option>
+          </select>
+
+          <p class="config-help" id="mail-state">—</p>
+
+          <div class="config-actions">
+            <button type="button" class="btn-ghost" data-save="mail">Enregistrer</button>
+            <button type="button" class="btn-primary" id="mail-read-now">Lire maintenant</button>
+          </div>
+          <p class="config-result" id="mail-result" hidden></p>
+        </article>
+
+        <article class="card config-card">
+          <h2 class="card-title">Sessions Claude</h2>
+          <p class="config-help">Les sessions Claude Code de ce poste créent et suivent tes tâches
+             ici : elles retrouvent ou ouvrent la tâche du travail en cours, notent l'avancement et
+             déclarent le temps passé. Le bilan s'appuie dessus. Lien local uniquement : une session
+             web ou cloud ne joint pas ce PC.</p>
+          <p class="config-help" id="ag-state">—</p>
+
+          <label for="ag-space">Espace de la clé</label>
+          <select id="ag-space">
+            <option value="pro">Pro : projets et tâches pro uniquement</option>
+            <option value="perso">Perso : projets et tâches perso uniquement</option>
+          </select>
+          <p class="config-help">Une clé par espace : une session enregistrée avec la clé perso ne
+             voit ni ne modifie rien de l'espace pro, et inversement. Lance la commande dans le
+             terminal du profil Claude Code concerné (CLAUDE_CONFIG_DIR).</p>
+
+          <div id="ag-command-box" hidden>
+            <label for="ag-command">Commande à lancer une fois dans un terminal</label>
+            <textarea id="ag-command" rows="4" readonly class="mono-box"></textarea>
+            <p class="config-help">La clé n'est affichée qu'ici, maintenant. Si un lien existait déjà,
+               retire-le d'abord : <code id="ag-remove"></code></p>
+          </div>
+
+          <div class="config-actions">
+            <button type="button" class="btn-ghost" id="ag-copy" hidden>Copier la commande</button>
+            <button type="button" class="btn-primary" id="ag-generate">Générer une clé</button>
+          </div>
+        </article>
+
+        <article class="card config-card">
+          <h2 class="card-title">Téléphone (Telegram)</h2>
+          <p class="config-help" id="tg-state"></p>
+
+          <label for="cf-tg-token">Jeton du bot <span id="cf-tg-key-state" class="key-state"></span></label>
+          <input type="password" id="cf-tg-token" placeholder="Colle le jeton BotFather, ou laisse vide">
+
+          <label for="cf-tg-digest">Instantané épinglé</label>
+          <select id="cf-tg-digest">
+            <option value="1">Message épinglé tenu à jour</option>
+            <option value="0">Désactivé</option>
+          </select>
+          <p class="config-help">Un unique message, édité à chaque changement et épinglé en
+             tête du chat. Télégram le conserve sur ses serveurs : il reste lisible depuis
+             le téléphone même PC éteint.</p>
+
+          <div class="config-actions">
+            <button type="button" class="btn-primary" data-save="telegram">Enregistrer</button>
+          </div>
+        </article>
+
+        <article class="card config-card">
+          <h2 class="card-title">Téléphone (navigateur)</h2>
+          <p class="config-help">Ouvre NOMAIA sur ton téléphone, au bureau comme dehors, par
+             Tailscale : un réseau privé chiffré entre tes appareils.</p>
+          <ol class="config-steps">
+            <li>Installe Tailscale sur ce PC et sur le téléphone, même compte.</li>
+            <li>Sur le PC, une fois : <code id="mb-serve">tailscale serve --bg 5555</code></li>
+            <li>Colle ici l'adresse affichée (https://…ts.net) et enregistre.</li>
+            <li>Ouvre cette adresse sur le téléphone, puis saisis le code ci-dessous.</li>
+          </ol>
+
+          <label for="mb-origin">Adresse Tailscale du PC</label>
+          <input id="mb-origin" type="url" inputmode="url" spellcheck="false"
+                 placeholder="https://mon-pc.tail1234.ts.net">
+
+          <div class="pair-code-box" id="mb-code-box" hidden>
+            <span class="pair-code" id="mb-code">—</span>
+            <span class="config-help" id="mb-code-help"></span>
+          </div>
+
+          <div class="config-actions">
+            <button type="button" class="btn-ghost" id="mb-save">Enregistrer</button>
+            <button type="button" class="btn-primary" id="mb-pair">Afficher un code</button>
+          </div>
+        </article>
+
+        </div>
+      </section>
+
+      <section class="cfg-group" id="cfg-consommation" data-group="consommation" aria-labelledby="cfg-consommation-title">
+        <header class="cfg-group-head"><h2 class="cfg-group-title" tabindex="-1" id="cfg-consommation-title">Consommation</h2><p class="cfg-group-hint">Jetons et appels des 30 derniers jours.</p></header>
+        <section class="stats" id="usage-stats" aria-label="Consommation des 30 derniers jours"></section>
+        <section class="review-box" id="usage-detail"></section>
+      </section>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,335 @@
+/* NOMAIA — contacts. */
+
+/* --- Contacts ------------------------------------------------------------- */
+
+.ct-error { margin: 0 0 16px; }
+
+.ct-zone { margin-bottom: 30px; }
+
+/* La zone de relance est la plus utile de la page : son titre est accentue. */
+.ct-head-late .group-title { color: var(--p2-text); }
+
+.ct-head-late .group-count {
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--p2-soft);
+  color: var(--p2-text);
+  font-weight: 600;
+}
+
+.ct-add { margin-bottom: 14px; }
+.ct-add input[type="text"], .ct-add input[type="email"] { flex: 1 1 180px; }
+.ct-add select { flex: 0 1 190px; }
+
+/* Liens vers les taches : pas de style commun pour .link hors de la boite de reception. */
+.ct-wait .link,
+.ct-sheet-hint .link {
+  color: var(--accent-text);
+  font-size: 12.5px;
+  text-decoration: none;
+}
+
+.ct-wait .link:hover,
+.ct-sheet-hint .link:hover { text-decoration: underline; }
+
+/* --- Contacts : attentes a relancer --- */
+
+.ct-wait-list { display: flex; flex-direction: column; gap: 8px; }
+
+.ct-wait {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 15px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  /* translate (et non transform) : l'animation d'entree .anim-in fige transform. */
+  transition: translate var(--dur-fast) var(--ease-out), background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+
+.ct-wait:hover {
+  translate: 0 -1px;
+  background: var(--surface-hover);
+  border-color: var(--accent-ring);
+  border-left-color: var(--accent);
+}
+
+.ct-wait.is-overdue,
+.ct-wait.is-overdue:hover {
+  border-left-color: var(--p1);
+  background: var(--p1-soft);
+}
+
+/* Le compteur de jours est l'information qui doit sauter aux yeux. */
+.ct-wait-days {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 54px;
+  padding: 5px 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+}
+
+.ct-wait-days strong {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--accent-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-wait-days span {
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.ct-wait.is-overdue .ct-wait-days { border-color: var(--p1); }
+.ct-wait.is-overdue .ct-wait-days strong { color: var(--p1-text); }
+
+.ct-wait-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.ct-wait-subject { font-weight: 600; color: var(--text-strong); overflow-wrap: anywhere; }
+
+.ct-wait-meta {
+  color: var(--text-dim);
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+
+.ct-wait-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* --- Contacts : interlocuteurs --- */
+
+.ct-person-list { display: flex; flex-direction: column; gap: 8px; }
+
+.ct-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 13px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  transition: translate var(--dur-fast) var(--ease-out), background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+
+.ct-person:hover {
+  translate: 0 -1px;
+  background: var(--surface-hover);
+  border-color: var(--accent-ring);
+}
+
+.ct-person-open {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 3px 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ct-person-open:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.ct-avatar {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--accent-ring);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ct-person-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ct-person-name { font-weight: 600; color: var(--text-strong); overflow-wrap: anywhere; }
+
+.ct-person-meta {
+  color: var(--text-dim);
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+
+.ct-counters { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+.ct-counter {
+  padding: 2px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ct-counter.is-waiting.is-on {
+  color: var(--p2-text);
+  border-color: transparent;
+  background: var(--p2-soft);
+  font-weight: 600;
+}
+
+.ct-counter.is-owed.is-on {
+  color: var(--accent-text);
+  border-color: transparent;
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+/* --- Contacts : fiche d'un interlocuteur --- */
+
+.ct-modal { width: min(620px, 94vw); }
+
+.ct-sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.ct-sheet-head h2 { margin: 0; overflow-wrap: anywhere; }
+
+.ct-sheet-meta {
+  margin: 4px 0 0;
+  color: var(--text-dim);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.ct-sheet-body { max-height: 58vh; overflow-y: auto; padding-right: 4px; }
+.ct-sheet-body .empty { padding: 18px 0; }
+
+.ct-sheet-contact {
+  padding: 10px 13px;
+  margin-bottom: 18px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.ct-sheet-line { margin: 0; font-family: var(--mono); font-size: 12.5px; overflow-wrap: anywhere; }
+
+.ct-sheet-notes {
+  margin: 7px 0 0;
+  color: var(--text-dim);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.ct-sheet-section { margin-bottom: 20px; }
+
+/* Dans la fiche, les attentes n'ont pas d'effet de survol : la fenetre ne bouge pas. */
+.ct-sheet-section .ct-wait:hover { translate: none; }
+
+.ct-sheet-hint {
+  margin: 9px 0 0;
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+
+.ct-task-list { display: flex; flex-direction: column; gap: 6px; }
+
+/* Les taches sont en lecture seule ici : ni curseur, ni action. */
+.ct-task {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 13px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--p3);
+  border-radius: var(--radius-sm);
+}
+
+.ct-task[data-priority="1"] { border-left-color: var(--p1); }
+.ct-task[data-priority="2"] { border-left-color: var(--p2); }
+.ct-task[data-priority="4"] { border-left-color: var(--p4); }
+
+.ct-task.is-done { opacity: 0.6; }
+.ct-task.is-done .ct-task-title { text-decoration: line-through; }
+
+.ct-task-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ct-task-title { overflow-wrap: anywhere; }
+.ct-task-meta { color: var(--text-dim); font-size: 12.5px; overflow-wrap: anywhere; }
+
+.ct-sheet-actions { justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.ct-sheet-actions .btn-ghost { text-decoration: none; }
+
+@media (max-width: 860px) {
+  .ct-add select, .ct-add input[type="text"], .ct-add input[type="email"],
+  .ct-add input[type="date"] { flex: 1 1 100%; }
+  .ct-add .btn-primary { width: 100%; }
+
+  .ct-wait { flex-wrap: wrap; gap: 10px 12px; padding: 11px 13px; }
+  .ct-wait-body { flex: 1 1 0; min-width: 60%; }
+  .ct-wait-actions { flex: 1 1 100%; justify-content: flex-end; flex-wrap: wrap; }
+
+  .ct-person { flex-wrap: wrap; }
+  .ct-person-open { flex-wrap: wrap; min-height: 44px; }
+  .ct-counters { flex: 1 1 100%; justify-content: flex-start; }
+  .ct-sheet-body { max-height: 50vh; }
+}
+
+/* --- Projets d'un contact ------------------------------------------------ */
+
+/* Filtre de la liste, rejete a droite du trait de la tete de groupe. */
+.ct-person-filter { order: 1; min-height: 32px; font-size: 12.5px; }
+
+/* Cases « Projets suivis » de la fiche : pastilles cochables. */
+.ct-project-picks { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* Doublement qualifie : la regle generique .modal label (bloc, marges, champs
+   pleine largeur) l'emporterait sinon sur ces pastilles en ligne. */
+.ct-project-picks .ct-project-pick {
+  display: inline-flex;
+  margin: 0;
+  font-weight: 500;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, background-color var(--dur-fast) ease;
+}
+
+.ct-project-picks .ct-project-pick:hover { border-color: var(--accent-ring); }
+.ct-project-picks .ct-project-pick input { width: auto; margin: 0; }
+
+.ct-project-picks .ct-project-pick:has(input:checked) {
+  color: var(--accent-text);
+  border-color: var(--accent-ring);
+  background: var(--accent-soft);
+}

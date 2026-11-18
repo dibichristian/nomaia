@@ -1,0 +1,145 @@
+/* NOMAIA — jetons de design.
+ *
+ * Trois couches : valeurs de base (couleurs NOMAIA), roles semantiques
+ * (surface, texte, statut), puis les composants qui ne lisent que les roles.
+ * Theme sombre par defaut ; le theme clair redefinit les seuls roles.
+ *
+ * Les anciens noms (--glass, --text-dim, --accent-soft...) restent des
+ * alias : les feuilles des pages existantes suivent ainsi les deux themes
+ * sans etre reecrites.
+ *
+ * Contrastes verifies en AA (4,5:1) pour tout texte : --text-faint est
+ * reserve aux elements decoratifs et aux libelles de grande taille.
+ */
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Fonds et surfaces */
+  --bg: #060910;
+  --surface: rgba(16, 26, 43, 0.62);
+  --surface-hover: rgba(26, 42, 66, 0.78);
+  --surface-strong: rgba(14, 22, 37, 0.96);   /* fenetres, menus, palette */
+  --surface-sunken: rgba(255, 255, 255, 0.03);
+  --chrome: rgba(12, 20, 34, 0.72);            /* barre laterale et en-tete (verre) */
+  --field: rgba(4, 8, 15, 0.6);
+  --overlay: rgba(2, 5, 10, 0.62);
+
+  /* Traits */
+  --line: rgba(120, 180, 220, 0.14);
+  --line-soft: rgba(120, 180, 220, 0.09);
+  --line-strong: rgba(34, 211, 238, 0.42);
+
+  /* Texte */
+  --text: #dbe7f3;
+  --text-strong: #eef6fc;
+  --text-dim: #8ea3b9;
+  --text-faint: #4c6076;
+
+  /* Accent NOMAIA : cyan, indigo en second */
+  --accent: #22d3ee;
+  --accent-text: #22d3ee;
+  --accent-strong: #22d3ee;                    /* fond des boutons principaux */
+  --on-accent: #04131a;
+  --accent-2: #818cf8;
+  --accent-2-text: #a5b4fc;
+  --accent-2-soft: rgba(129, 140, 248, 0.16);
+  --accent-soft: rgba(34, 211, 238, 0.12);
+  --accent-ring: rgba(34, 211, 238, 0.28);
+  --accent-glow: rgba(34, 211, 238, 0.45);
+
+  /* Priorites et etats : --pX pour les traits et pastilles, --pX-text pour le texte */
+  --p1: #f43f5e;  --p1-text: #fb7185;  --p1-soft: rgba(244, 63, 94, 0.13);
+  --p2: #fb923c;  --p2-text: #fdba74;  --p2-soft: rgba(251, 146, 60, 0.13);
+  --p3: #38bdf8;  --p3-text: #7dd3fc;  --p3-soft: rgba(56, 189, 248, 0.13);
+  --p4: #64748b;  --p4-text: #9fb3c8;  --p4-soft: rgba(100, 116, 139, 0.16);
+  --ok: #34d399;  --ok-text: #6ee7b7;  --ok-soft: rgba(52, 211, 153, 0.13);
+
+  /* Ombres */
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  --shadow-pop: 0 30px 80px -24px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(34, 211, 238, 0.05);
+
+  /* Aurore du fond */
+  --aurora-1: rgba(34, 211, 238, 0.11);
+  --aurora-2: rgba(129, 140, 248, 0.16);
+  --aurora-3: rgba(34, 211, 238, 0.045);
+
+  /* Alias historiques */
+  --glass: var(--surface);
+  --glass-hover: var(--surface-hover);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #f3f6fa;
+  --surface: #ffffff;
+  --surface-hover: #f6f9fc;
+  --surface-strong: rgba(255, 255, 255, 0.98);
+  --surface-sunken: rgba(15, 40, 70, 0.035);
+  --chrome: rgba(255, 255, 255, 0.82);
+  --field: #ffffff;
+  --overlay: rgba(15, 30, 50, 0.32);
+
+  --line: rgba(15, 40, 70, 0.12);
+  --line-soft: rgba(15, 40, 70, 0.07);
+  --line-strong: rgba(8, 145, 178, 0.45);
+
+  --text: #0d1b2a;
+  --text-strong: #06121e;
+  --text-dim: #4a5d73;
+  --text-faint: #8a9bb0;
+
+  /* Cyan assombri : #0e7490 garde 5,4:1 sur blanc, le cyan NOMAIA pur n'en a que 1,8 */
+  --accent: #0e7490;
+  --accent-text: #0e7490;
+  --accent-strong: #0e7490;
+  --on-accent: #ffffff;
+  --accent-2: #6366f1;
+  --accent-2-text: #4338ca;
+  --accent-2-soft: rgba(99, 102, 241, 0.11);
+  --accent-soft: rgba(8, 145, 178, 0.10);
+  --accent-ring: rgba(8, 145, 178, 0.25);
+  --accent-glow: rgba(8, 145, 178, 0.18);
+
+  --p1: #e11d48;  --p1-text: #be123c;  --p1-soft: rgba(225, 29, 72, 0.09);
+  --p2: #ea580c;  --p2-text: #c2410c;  --p2-soft: rgba(234, 88, 12, 0.10);
+  --p3: #0284c7;  --p3-text: #0369a1;  --p3-soft: rgba(2, 132, 199, 0.10);
+  --p4: #94a3b8;  --p4-text: #4a5d73;  --p4-soft: rgba(100, 116, 139, 0.10);
+  --ok: #059669;  --ok-text: #047857;  --ok-soft: rgba(5, 150, 105, 0.10);
+
+  --shadow-card: 0 6px 18px -14px rgba(15, 40, 70, 0.28);
+  --shadow-pop: 0 30px 70px -28px rgba(15, 40, 70, 0.45), 0 0 0 1px rgba(15, 40, 70, 0.06);
+
+  --aurora-1: rgba(34, 211, 238, 0.12);
+  --aurora-2: rgba(99, 102, 241, 0.10);
+  --aurora-3: rgba(34, 211, 238, 0.04);
+}
+
+:root {
+  /* Forme */
+  --radius: 16px;
+  --radius-sm: 9px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 18px;
+  --blur: blur(18px);
+
+  /* Typographie : polices natives de Windows, rien a telecharger */
+  --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-display: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --mono: "Cascadia Code", "Consolas", ui-monospace, monospace;
+
+  /* Mouvement : seules transform et opacity sont animees */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-spring: cubic-bezier(0.3, 1.3, 0.5, 1);
+  --dur-fast: 0.15s;
+  --dur: 0.22s;
+  --dur-slow: 0.4s;
+
+  /* Mise en page */
+  --sidebar-w: 248px;
+  --topbar-h: 56px;
+  --content-max: 1180px;
+}

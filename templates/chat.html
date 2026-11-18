@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% set page_styles = ["chat"] %}
+
+{% block title %}NOMAIA — Chat{% endblock %}
+
+{% block header_date %}<span id="header-date" data-today="{{ today }}"></span>{% endblock %}
+
+{% block content %}
+  <header class="page-head chat-page-head">
+    <div>
+      <p class="page-kicker" id="chat-provider">—</p>
+      <h1 class="page-title">Conversation</h1>
+    </div>
+  </header>
+
+  <div class="chat-warning" id="chat-warning" role="status" hidden></div>
+
+  <div class="chat-layout">
+    <aside class="conv-list" aria-label="Conversations">
+      <div class="conv-top">
+        <button type="button" class="btn-primary conv-new" id="conv-new">＋ Nouvelle conversation</button>
+        <button type="button" class="btn-ghost conv-toggle" id="conv-toggle"
+                aria-expanded="false" aria-controls="conv-panel">Conversations</button>
+      </div>
+      <div class="conv-panel" id="conv-panel">
+        <input type="search" class="conv-filter" id="conv-filter" placeholder="Filtrer…" aria-label="Filtrer les conversations">
+        <label class="check-inline conv-archives">
+          <input type="checkbox" id="conv-show-archived"> Afficher les archivées
+        </label>
+        <div class="conv-items" id="conv-items">
+          <p class="empty">Chargement…</p>
+        </div>
+      </div>
+    </aside>
+
+    <section class="card chat" aria-label="Fil de la conversation">
+      <div class="chat-head">
+        <h2 class="chat-title" id="chat-title">Conversation</h2>
+        <div class="chat-head-actions">
+          <button type="button" class="btn-ghost" id="conv-rename" title="Renommer">Renommer</button>
+          <button type="button" class="btn-ghost" id="conv-archive" title="Ranger la conversation">Archiver</button>
+          <button type="button" class="btn-ghost danger" id="conv-delete" title="Supprimer la conversation">Supprimer</button>
+          <button type="button" class="btn-ghost" id="chat-clear">Vider</button>
+        </div>
+      </div>
+
+      <div class="chat-thread" id="chat-thread" aria-live="polite">
+        <p class="empty">Chargement…</p>
+      </div>
+
+      <div class="chat-pending anim-in" id="chat-pending" role="group"
+        aria-label="Plan d'actions en attente de confirmation" hidden></div>
+
+      <div class="chat-working" id="chat-working" hidden>
+        <span class="chat-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="chat-working-label" id="chat-working-label">NOMAIA réfléchit…</span>
+      </div>
+
+      <form class="chat-composer" id="chat-form" autocomplete="off">
+        <textarea id="chat-input" rows="1" aria-label="Message à NOMAIA" enterkeyhint="send"
+          placeholder="Parle à NOMAIA…  (Entrée envoie, Maj+Entrée saute une ligne)"></textarea>
+        <button type="submit" class="btn-primary" id="chat-send">Envoyer</button>
+      </form>
+    </section>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

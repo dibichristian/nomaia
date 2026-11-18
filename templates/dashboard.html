@@ -1,0 +1,149 @@
+{% extends "layout.html" %}
+{% set page_styles = [] %}
+
+{% block title %}NOMAIA — Tâches{% endblock %}
+
+{% block header_date %}
+  <span id="header-date" data-today="{{ today }}"></span>
+{% endblock %}
+
+{% block content %}
+  <header class="page-head">
+    <div>
+      <h1 class="page-title">Tâches</h1>
+    </div>
+    <div class="page-actions">
+      <div class="filter-bar">
+        <label for="filter-project">Projet</label>
+        <select id="filter-project">
+          <option value="">Tous</option>
+          <option value="none">Sans projet</option>
+          {% for project in projects %}
+            <option value="{{ project.id }}">{{ project.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <section class="stats" id="stats">
+    <div class="stat">
+      <span class="stat-value" id="stat-todo">—</span>
+      <span class="stat-label">À faire</span>
+    </div>
+    <div class="stat stat-late">
+      <span class="stat-value" id="stat-late">—</span>
+      <span class="stat-label">En retard</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value" id="stat-today">—</span>
+      <span class="stat-label">Pour aujourd'hui</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value" id="stat-load">—</span>
+      <span class="stat-label">Charge estimée</span>
+    </div>
+    <div class="stat stat-done">
+      <span class="stat-value" id="stat-done">—</span>
+      <span class="stat-label">Terminées aujourd'hui</span>
+    </div>
+  </section>
+
+  <form class="quick-add" id="quick-add" autocomplete="off">
+    <input type="text" id="qa-title" name="title" placeholder="Nouvelle tâche…" maxlength="300" required>
+    <select id="qa-priority" name="priority" title="Priorité">
+      {% for value, label in priority_labels.items() %}
+        <option value="{{ value }}" {% if value == 3 %}selected{% endif %}>P{{ value }} · {{ label }}</option>
+      {% endfor %}
+    </select>
+    <input type="number" id="qa-estimate" name="estimate_min" value="30" min="5" max="1440" step="5" title="Durée estimée en minutes">
+    <input type="date" id="qa-deadline" name="deadline" title="Échéance">
+    <select id="qa-energy" name="energy" title="Énergie requise">
+      {% for value, label in energy_labels.items() %}
+        <option value="{{ value }}" {% if value == 'med' %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select id="qa-project" name="project_id" title="Projet">
+      <option value="">Sans projet</option>
+      {% for project in projects %}
+        <option value="{{ project.id }}">{{ project.name }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-primary">Ajouter</button>
+  </form>
+
+  <section class="board" id="board">
+    <p class="empty" id="loading">Chargement…</p>
+  </section>
+
+  <dialog class="modal" id="edit-modal">
+    <form id="edit-form" method="dialog">
+      <h2>Modifier la tâche</h2>
+      <input type="hidden" id="ed-id">
+
+      <label for="ed-title">Titre</label>
+      <input type="text" id="ed-title" maxlength="300" required>
+
+      <label for="ed-description">Description</label>
+      <textarea id="ed-description" rows="3"></textarea>
+
+      <div class="modal-row">
+        <div>
+          <label for="ed-priority">Priorité</label>
+          <select id="ed-priority">
+            {% for value, label in priority_labels.items() %}
+              <option value="{{ value }}">P{{ value }} · {{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="ed-estimate">Durée (min)</label>
+          <input type="number" id="ed-estimate" min="5" max="1440" step="5">
+        </div>
+      </div>
+
+      <div class="modal-row">
+        <div>
+          <label for="ed-deadline">Échéance</label>
+          <input type="date" id="ed-deadline">
+        </div>
+        <div>
+          <label for="ed-energy">Énergie</label>
+          <select id="ed-energy">
+            {% for value, label in energy_labels.items() %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <label for="ed-project">Projet</label>
+      <select id="ed-project">
+        <option value="">Sans projet</option>
+        {% for project in projects %}
+          <option value="{{ project.id }}">{{ project.name }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="ed-space">Espace</label>
+      <select id="ed-space" title="Une tâche rattachée à un projet suit l'espace du projet">
+        <option value="pro">Pro</option>
+        <option value="perso">Perso</option>
+      </select>
+
+      <label for="ed-person">Due a</label>
+      <select id="ed-person">
+        <option value="">Personne en particulier</option>
+      </select>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="ed-cancel">Annuler</button>
+        <button type="submit" class="btn-primary">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

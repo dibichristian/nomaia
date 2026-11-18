@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+{% set page_styles = ["pilot", "projets", "bilan"] %}
+
+{% block title %}NOMAIA — Bilan{% endblock %}
+
+{% block header_date %}<span id="header-date" data-today="{{ today }}"></span>{% endblock %}
+
+{% block content %}
+  <header class="page-head">
+    <div>
+      <p class="page-kicker bl-range" id="bl-range">—</p>
+      <h1 class="page-title">Bilan</h1>
+    </div>
+    <div class="page-actions bl-period">
+      <select id="bl-period" aria-label="Période du bilan">
+        <option value="w0">Semaine en cours</option>
+        <option value="w1">Semaine dernière</option>
+        <option value="w2">Il y a deux semaines</option>
+        <option value="m0">Mois en cours</option>
+        <option value="m1">Mois dernier</option>
+        <option value="custom">Dates libres</option>
+      </select>
+      <span class="bl-custom" id="bl-custom" hidden>
+        <input type="date" id="bl-start" aria-label="Début de la période">
+        <input type="date" id="bl-end" aria-label="Fin de la période">
+      </span>
+      <button type="button" class="btn-primary" id="bl-generate">Générer le bilan</button>
+      <button type="button" class="btn-ghost" onclick="window.print()" title="Imprimer, ou choisir « Enregistrer en PDF »">Imprimer / PDF</button>
+    </div>
+  </header>
+
+  <section class="stats" id="bl-stats"></section>
+
+  <section id="bl-charts"></section>
+
+  <section id="bl-hours"></section>
+
+  <section id="bl-notes"></section>
+
+  <section id="bl-projects"></section>
+
+  <section class="review-box" id="bl-review">
+    <p class="empty">Aucun bilan généré pour cette période.</p>
+  </section>
+
+  <section class="review-box report-box">
+    <div class="review-head">Rapport d'avancement pour un chef de projet</div>
+    <p class="pj-faint">Mêmes dates que la période choisie en haut de page. Le message part par WhatsApp : relis-le avant de l'envoyer.</p>
+    <div class="report-controls">
+      <select id="rp-manager" aria-label="Chef de projet"></select>
+      <input type="url" id="rp-url" placeholder="Lien du tableau de bord (https://claude.ai/…)" aria-label="Lien du tableau de bord">
+      <button type="button" class="btn-ghost" id="rp-url-save">Enregistrer le lien</button>
+    </div>
+    <div class="stats" id="rp-stats"></div>
+    <textarea id="rp-message" rows="14" aria-label="Message WhatsApp"></textarea>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="rp-copy">Copier le message</button>
+      <a class="btn-primary" id="rp-whatsapp" href="#" target="_blank" rel="noopener">Ouvrir WhatsApp</a>
+    </div>
+  </section>
+
+  <section class="review-history">
+    <h2 class="window-title">Bilans précédents</h2>
+    <ul class="review-history-list" id="bl-history"></ul>
+  </section>
+
+  {# Journal detaille en dernier, replie ; hors impression : le PDF reste une synthese. #}
+  <section class="no-print" id="bl-worklog"></section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/pilot.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bilan.js') }}"></script>
+{% endblock %}

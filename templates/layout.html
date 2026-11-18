@@ -1,0 +1,259 @@
+{#- Menu principal, en groupes pour la barre laterale (grand ecran).
+    Les pages « primary » forment la bulle du bas sur telephone ; les autres
+    passent dans le panneau « Plus ». -#}
+{%- set nav_groups = [
+  {"title": "Aujourd'hui", "items": [
+    {"endpoint": "main.plan", "active": ("main.plan",), "label": "Plan du jour", "short": "Plan", "icon": "plan", "primary": True},
+    {"endpoint": "main.dashboard", "active": ("main.dashboard",), "label": "Tâches", "short": "Tâches", "icon": "tasks", "primary": True},
+    {"endpoint": "main.agenda", "active": ("main.agenda",), "label": "Agenda", "short": "Agenda", "icon": "agenda", "primary": False},
+    {"endpoint": "main.inbox", "active": ("main.inbox",), "label": "Boîte de réception", "short": "Réception", "icon": "inbox", "primary": True},
+  ]},
+  {"title": "Pilotage", "items": [
+    {"endpoint": "main.projects", "active": ("main.projects", "main.project_detail"), "label": "Projets", "short": "Projets", "icon": "projects", "primary": False},
+    {"endpoint": "main.review", "active": ("main.review",), "label": "Bilan", "short": "Bilan", "icon": "review", "primary": False},
+    {"endpoint": "main.contacts", "active": ("main.contacts",), "label": "Contacts", "short": "Contacts", "icon": "contacts", "primary": False},
+  ]},
+  {"title": "Mémoire", "items": [
+    {"endpoint": "main.knowledge", "active": ("main.knowledge",), "label": "Notes", "short": "Notes", "icon": "notes", "primary": False},
+    {"endpoint": "main.minutes", "active": ("main.minutes",), "label": "Comptes rendus", "short": "Comptes rendus", "icon": "minutes", "primary": False},
+  ]},
+  {"title": "Assistant", "items": [
+    {"endpoint": "main.chat", "active": ("main.chat",), "label": "Conversation", "short": "Chat", "icon": "chat", "primary": True},
+    {"endpoint": "main.configuration", "active": ("main.configuration",), "label": "Configuration", "short": "Config", "icon": "config", "primary": False},
+  ]},
+] -%}
+{%- set ns = namespace(items=[], secondary_active=False) -%}
+{%- for group in nav_groups -%}
+  {%- for item in group["items"] -%}
+    {%- set ns.items = ns.items + [item] -%}
+    {%- if not item.primary and request.endpoint in item.active -%}{%- set ns.secondary_active = True -%}{%- endif -%}
+  {%- endfor -%}
+{%- endfor -%}
+{%- set nav_items = ns.items -%}
+{#- Ordre de la bulle du bas sur telephone : inchange pour la memoire du pouce. -#}
+{%- set mobile_order = ["main.inbox", "main.chat", "main.plan", "main.dashboard"] -%}
+{#- Icones au trait, grille de 24 px (famille lucide). -#}
+{%- macro nav_icon(name) -%}
+<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  {%- if name == "inbox" %}<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+  {%- elif name == "chat" %}<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  {%- elif name == "plan" %}<path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/>
+  {%- elif name == "tasks" %}<path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+  {%- elif name == "agenda" %}<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+  {%- elif name == "projects" %}<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
+  {%- elif name == "contacts" %}<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+  {%- elif name == "review" %}<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+  {%- elif name == "config" %}<path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>
+  {%- elif name == "notes" %}<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+  {%- elif name == "minutes" %}<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8"/><path d="M8 13h5"/>
+  {%- elif name == "search" %}<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+  {%- elif name == "sun" %}<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-17.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+  {%- elif name == "moon" %}<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+  {%- elif name == "more" %}<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>
+  {%- endif -%}
+</svg>
+{%- endmacro -%}
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#060910">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NOMAIA">
+  <title>{% block title %}NOMAIA{% endblock %}</title>
+  {#- Preferences d'affichage de cet appareil, appliquees avant le premier
+      rendu : sans cela, le theme clair clignoterait en sombre au chargement. -#}
+  <script>
+    (function () {
+      var root = document.documentElement;
+      try {
+        var theme = localStorage.getItem("nomaia.theme");
+        if (theme === "light" || theme === "dark") root.dataset.theme = theme;
+        if (localStorage.getItem("nomaia.ambient") === "on") root.dataset.ambient = "on";
+        if (localStorage.getItem("nomaia.motion") === "reduced") root.dataset.motion = "reduced";
+      } catch (error) { /* stockage indisponible : theme sombre par defaut */ }
+    })();
+  </script>
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/icon.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/shell.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/shared.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/tasks.css') }}">
+  {% for sheet in page_styles | default([]) %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/' ~ sheet ~ '.css') }}">
+  {% endfor %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" media="print">
+</head>
+<body>
+  <div class="aurora" aria-hidden="true"><div class="aurora-layer"></div></div>
+
+  <div class="app">
+    <aside class="sidebar" aria-label="Navigation principale">
+      <a class="brand" href="{{ url_for('main.plan') }}">
+        <span class="brand-mark">N</span>
+        <span class="brand-name">NOMAIA</span>
+      </a>
+
+      {% for group in nav_groups %}
+      <div class="side-group">
+        <p class="side-title">{{ group.title }}</p>
+        {% for item in group["items"] %}
+        {% set is_active = request.endpoint in item.active %}
+        <a href="{{ url_for(item.endpoint) }}" class="side-link{{ ' active' if is_active }}"
+           {% if is_active %}aria-current="page"{% endif %}>
+          {{ nav_icon(item.icon) }}<span>{{ item.label }}</span>
+          {% if item.endpoint == "main.inbox" %}<span class="side-badge" id="inbox-badge" hidden></span>{% endif %}
+        </a>
+        {% endfor %}
+      </div>
+      {% endfor %}
+
+      <div class="side-foot">
+        <button type="button" class="switch side-switch" role="switch" data-pref="ambient" data-on="on" data-off="off">
+          <span>Fond animé</span>
+          <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+        </button>
+        <div class="side-user">
+          <span class="side-avatar" aria-hidden="true">{{ display_initials }}</span>
+          <div class="side-user-text">
+            <p class="side-user-name">{{ display_name }}</p>
+            <span class="engine" id="engine-badge" title="Moteur de triage">—</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <a class="brand" href="{{ url_for('main.plan') }}" aria-label="NOMAIA, plan du jour">
+          <span class="brand-mark">N</span>
+          <span class="brand-name">NOMAIA</span>
+        </a>
+        <button type="button" class="cmdk-trigger" id="cmdk-open" aria-haspopup="dialog" aria-controls="cmdk">
+          {{ nav_icon('search') }}
+          <span>Rechercher, aller à, agir…</span>
+          <kbd>Ctrl K</kbd>
+        </button>
+        <div class="topbar-right">
+          <div class="space-switch" id="space-switch" role="group" aria-label="Espace affiché"
+               data-current="{{ space_filter }}"
+               title="Tâches et Projets n'affichent que cet espace ; le plan du jour reste commun">
+            {% for value, label in (("all", "Tout"), ("pro", "Pro"), ("perso", "Perso")) %}
+              <button type="button" class="chip{% if space_filter == value %} is-on{% endif %}"
+                      data-space="{{ value }}" aria-pressed="{{ 'true' if space_filter == value else 'false' }}">{{ label }}</button>
+            {% endfor %}
+            {% if space_filter == "all" %}
+              <select class="space-create" id="space-create" aria-label="Espace des nouveaux éléments"
+                      title="En mode Tout, ce que tu crées va dans cet espace">
+                <option value="pro" {% if create_space == "pro" %}selected{% endif %}>+ Pro</option>
+                <option value="perso" {% if create_space == "perso" %}selected{% endif %}>+ Perso</option>
+              </select>
+            {% endif %}
+          </div>
+          <div class="chrono-pill" id="chrono-pill" hidden>
+            <span class="chrono-dot" aria-hidden="true"></span>
+            <a class="chrono-title" id="chrono-title" href="{{ url_for('main.plan') }}"></a>
+            <span class="chrono-time" id="chrono-time" aria-live="off"></span>
+            <button type="button" class="chrono-stop" id="chrono-stop" aria-label="Arrêter le chronomètre">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2" fill="currentColor"/></svg>
+            </button>
+          </div>
+          <span class="topbar-date">{% block header_date %}{% endblock %}</span>
+          <div class="notif">
+            <button type="button" class="btn-square notif-button" id="notif-button" aria-label="Notifications"
+                    aria-haspopup="true" aria-expanded="false" aria-controls="notif-panel">
+              <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              <span class="notif-dot" id="notif-dot" hidden></span>
+            </button>
+            <div class="notif-panel" id="notif-panel" role="region" aria-label="Notifications" hidden>
+              <p class="notif-title">À regarder maintenant</p>
+              <ul class="notif-list" id="notif-list"></ul>
+            </div>
+          </div>
+          <button type="button" class="btn-square theme-toggle" id="theme-toggle" aria-label="Changer de thème">
+            <span class="icon-moon">{{ nav_icon('moon') }}</span>
+            <span class="icon-sun">{{ nav_icon('sun') }}</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="container">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <!-- Menu du telephone : bulle du bas (static/js/nav.js), invisible sur grand ecran. -->
+  <nav class="nav" id="main-nav" aria-label="Navigation principale (mobile)">
+    <span class="nav-bubble" aria-hidden="true"></span>
+    {% for endpoint in mobile_order %}
+    {% for item in nav_items if item.endpoint == endpoint %}
+    {% set is_active = request.endpoint in item.active %}
+    <a href="{{ url_for(item.endpoint) }}" class="nav-link{{ ' active' if is_active }}"
+       {% if is_active %}aria-current="page"{% endif %}>
+      {{ nav_icon(item.icon) }}<span class="nav-short">{{ item.short }}</span>
+    </a>
+    {% endfor %}
+    {% endfor %}
+    <button type="button" id="nav-more" aria-haspopup="dialog" aria-controls="nav-sheet"
+            class="nav-link nav-more{{ ' active' if ns.secondary_active }}">
+      {{ nav_icon('more') }}<span class="nav-short">Plus</span>
+    </button>
+  </nav>
+
+  <!-- Panneau « Plus » du telephone : les pages hors de la bulle du bas. -->
+  <dialog class="nav-sheet" id="nav-sheet" aria-label="Autres pages">
+    <span class="nav-sheet-grip" aria-hidden="true"></span>
+    <div class="nav-sheet-grid">
+      {% for item in nav_items if not item.primary %}
+      <a href="{{ url_for(item.endpoint) }}"
+         class="nav-sheet-item{{ ' active' if request.endpoint in item.active }}">
+        {{ nav_icon(item.icon) }}
+        <span>{{ item.label }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </dialog>
+
+  <!-- Palette de commandes : Ctrl+K, ou le bouton de recherche de l'en-tete. -->
+  <dialog class="cmdk" id="cmdk" aria-label="Palette de commandes">
+    <label class="cmdk-search">
+      {{ nav_icon('search') }}
+      <span class="sr-only">Rechercher ou lancer une action</span>
+      <input type="text" id="cmdk-input" autocomplete="off" spellcheck="false"
+             placeholder="Rechercher une page, un projet, une tâche… ou une action"
+             role="combobox" aria-expanded="true" aria-controls="cmdk-list" aria-autocomplete="list">
+      <kbd>Échap</kbd>
+    </label>
+    <div class="cmdk-list" id="cmdk-list" role="listbox" aria-label="Résultats"></div>
+    <div class="cmdk-foot">
+      <span><kbd>↑ ↓</kbd> naviguer</span>
+      <span><kbd>Entrée</kbd> ouvrir</span>
+      <span><kbd>Échap</kbd> fermer</span>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  {#- Pages connues de la palette, generees depuis le menu : une page ajoutee
+      au menu y apparait sans toucher au JavaScript. -#}
+  {%- set pages = namespace(list=[]) -%}
+  {%- for group in nav_groups -%}{%- for item in group["items"] -%}
+    {%- set pages.list = pages.list + [{"label": item.label, "url": url_for(item.endpoint), "group": group.title}] -%}
+  {%- endfor -%}{%- endfor %}
+  <script id="cmdk-pages" type="application/json">{{ pages.list | tojson }}</script>
+  <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/engine.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/shell.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/attachments.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

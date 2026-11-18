@@ -1,0 +1,142 @@
+{# Fiche de detail d'une tache, partagee : logique dans static/js/task_detail.js. #}
+  <dialog class="modal task-detail" id="task-detail">
+    <form id="td-form" autocomplete="off">
+      <div class="td-head">
+        <h2>Détail de la tâche</h2>
+        <button type="button" class="icon-btn" id="td-close" title="Fermer" aria-label="Fermer la fiche">✕</button>
+      </div>
+
+      <p class="error-box" id="td-error" hidden></p>
+
+      <label for="td-title">Titre</label>
+      <input type="text" id="td-title" maxlength="300" required>
+
+      <label for="td-description">Description</label>
+      <textarea id="td-description" rows="4" placeholder="Contexte, liens, critères de fin…"></textarea>
+
+      <div class="modal-row">
+        <div>
+          <label for="td-priority">Priorité</label>
+          <select id="td-priority">
+            <option value="1">P1 · Critique</option>
+            <option value="2">P2 · Haute</option>
+            <option value="3">P3 · Normale</option>
+            <option value="4">P4 · Basse</option>
+          </select>
+        </div>
+        <div>
+          <label for="td-estimate">Durée (min)</label>
+          <input type="number" id="td-estimate" min="5" max="1440" step="5">
+        </div>
+      </div>
+
+      <div class="modal-row">
+        <div>
+          <label for="td-deadline">Échéance</label>
+          <input type="date" id="td-deadline">
+        </div>
+        <div>
+          <label for="td-energy">Énergie</label>
+          <select id="td-energy">
+            <option value="low">Faible</option>
+            <option value="med">Moyenne</option>
+            <option value="high">Forte</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="td-project">Projet</label>
+      <select id="td-project">
+        <option value="">Sans projet</option>
+      </select>
+
+      <div class="modal-row" id="td-pilot-row">
+        <div>
+          <label for="td-phase">Étape du projet</label>
+          <select id="td-phase">
+            <option value="">Sans étape</option>
+          </select>
+        </div>
+        <div>
+          <label for="td-side">Qui doit agir</label>
+          <select id="td-side">
+            <option value="us">Nous</option>
+            <option value="client">Client</option>
+            <option value="both">Conjoint</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-row">
+        <div>
+          <label for="td-kind">Nature</label>
+          <select id="td-kind">
+            <option value="task">Tâche</option>
+            <option value="anomaly">Anomalie</option>
+            <option value="deliverable">Livrable client</option>
+          </select>
+        </div>
+        <div id="td-severity-field">
+          <label for="td-severity">Gravité</label>
+          <select id="td-severity">
+            <option value="critical">Critique</option>
+            <option value="major">Majeure</option>
+            <option value="minor">Mineure</option>
+          </select>
+        </div>
+      </div>
+      <div id="td-module-field">
+        <label for="td-module">Module concerné</label>
+        <input type="text" id="td-module" maxlength="80" list="td-module-list" placeholder="Ventes, Achats, RH / Paie…">
+        <datalist id="td-module-list">
+          <option value="Achats">
+          <option value="Comptabilité">
+          <option value="Production">
+          <option value="RH / Paie">
+          <option value="Stock">
+          <option value="Transport">
+          <option value="Ventes">
+        </datalist>
+        <label for="td-cause">Cause trouvée</label>
+        <textarea id="td-cause" rows="2" placeholder="Pourquoi l'anomalie se produisait…"></textarea>
+        <label for="td-solution">Solution appliquée</label>
+        <textarea id="td-solution" rows="3"
+                  placeholder="Ce qui a été corrigé. À la clôture, une note « Solution » est créée dans la base de connaissances."></textarea>
+      </div>
+      <label class="check-inline">
+        <input type="checkbox" id="td-blocked">
+        Bloquée (en attente d'un déblocage)
+      </label>
+
+      <div class="td-journal">
+        <label for="td-progress">Avancement <span id="td-progress-value">0 %</span></label>
+        <input type="range" id="td-progress" min="0" max="100" step="5" value="0">
+        <div class="td-step-add">
+          <input type="text" id="td-note" maxlength="2000" placeholder="Note : ce qui avance, décidé ou bloque…">
+          <button type="button" class="btn-ghost" id="td-note-add">Noter</button>
+        </div>
+        <ul class="work-log" id="td-journal-list"></ul>
+      </div>
+
+      <div class="td-attachments">
+        <label>Pièces jointes</label>
+        <div id="td-attachments"></div>
+      </div>
+
+      <div class="td-steps">
+        <label>Étapes</label>
+        <p class="plan-hint">Une tâche découpée en étapes est planifiée étape par étape.</p>
+        <div id="td-steps-list"></div>
+        <div class="td-step-add">
+          <input type="text" id="td-step-title" maxlength="300" placeholder="Nouvelle étape…">
+          <input type="number" id="td-step-estimate" min="5" max="1440" step="5" value="30" title="Durée (min)">
+          <button type="button" class="btn-ghost" id="td-step-add">Ajouter</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="td-now">Faire maintenant</button>
+        <button type="button" class="btn-ghost" id="td-cancel">Fermer</button>
+        <button type="submit" class="btn-primary">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>

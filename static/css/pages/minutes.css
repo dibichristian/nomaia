@@ -1,0 +1,477 @@
+/* NOMAIA — comptes rendus : liste, editeur et impression.
+ *
+ * Composants communs (.card, .badge, .btn-*, .modal, .empty, .skel) :
+ * components.css. Ici : lignes de la liste, en-tete editable, sections de
+ * texte, listes d'elements et mise en page imprimee (export PDF).
+ */
+
+.print-only { display: none; }
+
+/* --- Liste ------------------------------------------------------------------ */
+
+.mn-filter { min-height: 38px; max-width: 260px; }
+
+.mn-list { display: flex; flex-direction: column; gap: 10px; }
+
+.mn-row {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.mn-row-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.mn-row-date strong {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+
+.mn-row-date span { font-size: 11.5px; color: var(--text-dim); }
+
+.mn-row-body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+
+.mn-row-title {
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--text-strong);
+  overflow-wrap: anywhere;
+}
+
+.mn-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+
+.mn-row-counts {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.mn-row-counts.has-open { color: var(--p2-text); }
+
+.mn-project {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.mn-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--dot, var(--accent-2));
+}
+
+.mn-empty { padding: 34px 22px; }
+
+.mn-empty p { max-width: 580px; margin: 8px auto 0; }
+
+.mn-empty .mn-empty-title {
+  margin-top: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 650;
+  color: var(--text-strong);
+}
+
+.mn-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* --- Editeur : en-tete -------------------------------------------------------- */
+
+.mn-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  margin: 0 0 6px 4px;
+  font-size: 13px;
+}
+
+.mn-head { padding: 16px 18px; margin-bottom: 14px; }
+
+.mn-head-top { display: flex; align-items: center; gap: 12px; }
+
+.mn-title-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-left: -9px;
+  padding: 4px 8px;
+  border-color: transparent;
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.mn-title-input:hover { border-color: var(--line); }
+.mn-title-input:focus { background: var(--field); }
+
+/* Etat de la sauvegarde automatique. */
+.mn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.mn-save::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--ok);
+}
+
+.mn-save[data-state="saving"]::before { background: var(--accent); animation: pouls 1.1s ease-in-out infinite; }
+.mn-save[data-state="error"] { color: var(--p1-text); }
+.mn-save[data-state="error"]::before { background: var(--p1); }
+
+.mn-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.mn-meta-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+
+.mn-meta-field label,
+.mn-meta-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.mn-meta-field input,
+.mn-meta-field select { width: 100%; min-height: 38px; }
+
+.mn-meta-field .badge { align-self: flex-start; margin-top: 8px; }
+
+.mn-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.mn-head-actions .danger { margin-right: auto; }
+
+/* --- Editeur : corps ------------------------------------------------------------ */
+
+.mn-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.mn-texts,
+.mn-items { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.mn-section .card-title label,
+.mn-item-block .card-title { cursor: default; }
+
+.mn-section textarea {
+  min-height: 64px;
+  overflow: hidden;
+  resize: none;
+}
+
+.mn-count {
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+/* --- Elements : decisions, actions, demandes ------------------------------------- */
+
+.mn-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mn-item {
+  padding: 8px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+
+.mn-item-row { display: flex; align-items: flex-start; gap: 6px; }
+
+.mn-item-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 32px;
+  padding: 4px 7px;
+  border-color: transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-strong);
+  line-height: 1.5;
+  overflow: hidden;
+  resize: none;
+}
+
+.mn-item-text:hover { border-color: var(--line); }
+.mn-item-text:focus { background: var(--field); }
+
+.mn-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.mn-item-meta input,
+.mn-quick-extra input {
+  flex: 1 1 130px;
+  min-width: 0;
+  min-height: 34px;
+  padding: 5px 9px;
+  font-size: 13px;
+}
+
+.mn-item-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12.5px;
+}
+
+.mn-convert { min-height: 32px; padding: 0 12px; font-size: 12.5px; }
+
+/* Inscription au registre impossible sans projet : grise, infobulle conservee. */
+.mn-convert[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+.mn-convert[aria-disabled="true"]:hover { border-color: var(--line); background: var(--surface-sunken); color: var(--text); }
+
+.mn-task-link {
+  color: var(--accent-text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.mn-task-link:hover { text-decoration: underline; }
+
+.mn-item-empty { padding: 2px 2px 4px; font-size: 13px; color: var(--text-dim); }
+
+.mn-quick { margin-top: 10px; }
+.mn-quick > input { width: 100%; }
+
+.mn-quick-extra { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.mn-quick-extra .btn-ghost { min-height: 34px; padding: 0 12px; }
+
+/* --- Fenetres ------------------------------------------------------------------- */
+
+.mn-modal-text { margin: 0 0 10px; color: var(--text); overflow-wrap: anywhere; }
+.mn-modal-hint { color: var(--text-dim); font-size: 13px; }
+
+.mn-pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 40vh;
+  margin: 0 0 10px;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+
+/* Confirmation de suppression : rouge en texte sur fond pale (AA dans les deux themes). */
+.btn-primary.mn-danger {
+  border: 1px solid var(--p1);
+  background: var(--p1-soft);
+  color: var(--p1-text);
+}
+
+.btn-primary.mn-danger:hover { filter: none; background: var(--p1-soft); border-color: var(--p1-text); }
+
+/* --- Telephone ------------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .page-actions { width: 100%; }
+  .mn-filter { flex: 1 1 100%; max-width: none; }
+  .page-actions .btn-primary { flex: 1 1 auto; }
+
+  .mn-row {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 4px 12px;
+    padding: 12px 14px;
+  }
+
+  .mn-row-counts { grid-column: 2; text-align: left; white-space: normal; }
+
+  .mn-title-input { font-size: 20px; }
+  .mn-head { padding: 14px; }
+  .mn-meta { grid-template-columns: 1fr 1fr; }
+  .mn-meta-project { grid-column: 1 / -1; }
+
+  .mn-head-actions .btn-ghost,
+  .mn-head-actions .btn-primary { flex: 1 1 auto; }
+  .mn-head-actions .danger { margin-right: 0; }
+
+  .mn-layout { grid-template-columns: minmax(0, 1fr); }
+
+  /* Cibles tactiles d'au moins 38 px. */
+  .mn-item-text,
+  .mn-item-meta input,
+  .mn-quick-extra input,
+  .mn-quick-extra .btn-ghost,
+  .mn-convert { min-height: 38px; }
+
+  .mn-item-del { flex: none; }
+}
+
+/* --- Impression (export PDF) ------------------------------------------------------
+ * Coquille, boutons et champs de saisie masques ; le compte rendu sort a
+ * l'encre noire sur fond blanc, quel que soit le theme a l'ecran. */
+
+@media print {
+  :root,
+  :root[data-theme] {
+    color-scheme: light;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-sunken: transparent;
+    --field: transparent;
+    --text: #111111;
+    --text-strong: #000000;
+    --text-dim: #444444;
+    --line: #bbbbbb;
+    --line-soft: #dddddd;
+    --accent-text: #000000;
+  }
+
+  @page { margin: 16mm 15mm; }
+
+  *,
+  *::before,
+  *::after { animation: none !important; transition: none !important; }
+
+  html,
+  body { background: var(--bg); color: var(--text); }
+
+  .aurora,
+  .sidebar,
+  .topbar,
+  #main-nav,
+  .nav-sheet,
+  .toast,
+  dialog,
+  button,
+  .no-print,
+  .mn-attachments,
+  #mn-list-view { display: none !important; }
+
+  .print-only { display: block; }
+
+  .app,
+  .app-main { display: block; padding: 0; }
+
+  .container { max-width: none; padding: 0; }
+
+  .card {
+    padding: 0;
+    margin: 0 0 12pt;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .mn-head { padding-bottom: 8pt; border-bottom: 1px solid var(--line); }
+
+  .mn-print-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 20pt;
+    color: var(--text-strong);
+  }
+
+  .mn-print-meta { margin: 4pt 0 0; font-size: 10pt; color: var(--text-dim); }
+
+  .mn-layout,
+  .mn-texts,
+  .mn-items { display: block; }
+
+  .card-title {
+    margin-bottom: 4pt;
+    font-size: 12pt;
+    break-after: avoid;
+  }
+
+  .mn-section.is-empty,
+  .mn-item-block.is-empty { display: none; }
+
+  /* Une zone de texte s'imprime tronquee : son contenu est recopie juste
+     avant l'impression dans un bloc .mn-print-text (minutes.js). */
+  textarea,
+  input { display: none !important; }
+
+  .mn-print-text {
+    margin: 0;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: var(--text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .mn-item-list { display: block; padding-left: 14pt; list-style: disc; }
+
+  .mn-item {
+    display: list-item;
+    padding: 0;
+    margin: 0 0 4pt;
+    border: 0;
+    background: none;
+    break-inside: avoid;
+  }
+
+  .mn-item-print:empty { display: none; }
+  .mn-item-print,
+  .mn-item-foot { margin: 0; font-size: 9.5pt; color: var(--text-dim); }
+
+  .badge {
+    padding: 0 5pt;
+    border: 1px solid var(--line);
+    background: none;
+    color: var(--text);
+  }
+
+  .mn-task-link { color: var(--text); }
+}

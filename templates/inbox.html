@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+{% set page_styles = ["inbox"] %}
+
+{% block title %}NOMAIA — Boîte de réception{% endblock %}
+
+{% block header_date %}<span id="header-date" data-today="{{ today }}"></span>{% endblock %}
+
+{% block content %}
+  <header class="page-head">
+    <div>
+      <p class="page-kicker">Captures et triage</p>
+      <h1 class="page-title">Boîte de réception</h1>
+    </div>
+    <div class="page-actions">
+      <button type="button" class="btn-ghost" id="mail-read" hidden
+        title="Lire les mails Outlook reçus depuis le dernier passage (via Claude Code)">Lire mes mails</button>
+    </div>
+  </header>
+
+  <section class="composer" id="composer">
+    <textarea id="cp-text" rows="4" aria-label="Entrée à envoyer à NOMAIA"
+      placeholder="Colle un message client, une conversation, une capture d'écran (Ctrl+V), ou explique ton problème en vrac. NOMAIA en déduit les tâches."></textarea>
+
+    <div id="cp-preview" class="cp-preview" hidden>
+      <img id="cp-preview-img" alt="Capture à envoyer">
+      <span id="cp-preview-mail" class="hint" hidden></span>
+      <button type="button" class="icon-btn danger" id="cp-preview-remove">Retirer</button>
+    </div>
+
+    <div class="composer-actions">
+      <label class="btn-ghost file-label">
+        Joindre une image ou un mail
+        <input type="file" id="cp-file" accept="image/png,image/jpeg,image/webp,image/gif,.eml,message/rfc822" hidden>
+      </label>
+      <span class="hint">Ctrl+V colle une capture d'écran · glisse un .eml ou écris /mail devant un mail collé</span>
+      <button type="button" class="btn-primary" id="cp-send">Envoyer à NOMAIA</button>
+    </div>
+  </section>
+
+  <div class="pair-banner" id="pair-banner" hidden></div>
+
+  <div class="radar-zone" id="radar-zone" role="status" hidden>
+    <span class="radar" aria-hidden="true"></span>
+    <p class="radar-label" id="radar-label">Analyse en cours</p>
+  </div>
+
+  <section class="inbox">
+    <aside class="inbox-side" aria-label="Entrées">
+      <div class="inbox-filter" role="group" aria-label="Filtrer les entrées">
+        <button type="button" data-filter="open" aria-pressed="false">À traiter <span id="filter-open-count"></span></button>
+        <button type="button" data-filter="all" aria-pressed="false">Tout</button>
+      </div>
+      <div class="thread-scroll" id="thread-scroll">
+        <div class="thread-list" id="thread-list">
+          <p class="empty">Chargement…</p>
+        </div>
+        <button type="button" class="btn-ghost thread-more" id="thread-more" hidden>Afficher plus</button>
+      </div>
+    </aside>
+
+    <article class="thread-view" id="thread-view">
+      <p class="empty">Sélectionne une entrée à gauche, ou dépose-en une nouvelle.</p>
+    </article>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/inbox.js') }}"></script>
+{% endblock %}

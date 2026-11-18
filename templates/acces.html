@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NOMAIA — Accès refusé</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/shell.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/shared.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/config.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}">
+</head>
+<body class="access-page">
+  <div class="aurora" aria-hidden="true"><div class="aurora-layer"></div></div>
+
+  <main class="container">
+    <section class="access-box">
+      <span class="brand-mark">N</span>
+      <h1>Accès refusé</h1>
+      <p>Cette page ne s'ouvre pas directement : elle demande une clé d'accès
+         que seul ton compte Windows possède.</p>
+      <p><strong>Ouvre NOMAIA depuis l'icône de la barre des tâches</strong>
+         ou depuis le raccourci sur ton bureau. Le navigateur retiendra ensuite
+         l'accès pendant un an.</p>
+
+      <form class="access-pair" method="post" action="/appairage">
+        <label for="pair-code">Sur ton téléphone : code d'appairage</label>
+        <p class="access-hint">Sur le PC, ouvre Config &gt; Connexions &gt; Téléphone (navigateur) et affiche un code.
+           Valable dix minutes, une seule fois.</p>
+        <div class="access-pair-row">
+          <input id="pair-code" name="code" type="text" inputmode="text"
+                 autocomplete="one-time-code" autocapitalize="characters"
+                 spellcheck="false" maxlength="12" placeholder="ABCD-EFGH" required>
+          <button type="submit" class="btn-primary">Appairer</button>
+        </div>
+        {% if pairing_failed %}
+        <p class="access-error">Code invalide ou expiré : affiches-en un nouveau.</p>
+        {% endif %}
+      </form>
+
+      <p class="access-note">Cette protection empêche les autres comptes de la
+         machine, et les extensions de ton navigateur, d'agir sur tes tâches.</p>
+    </section>
+  </main>
+</body>
+</html>

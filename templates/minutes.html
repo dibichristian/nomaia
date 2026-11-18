@@ -1,0 +1,237 @@
+{% extends "layout.html" %}
+{% set page_styles = ["minutes"] %}
+
+{% block title %}NOMAIA — Comptes rendus{% endblock %}
+
+{% block header_date %}<span id="header-date" data-today="{{ today }}"></span>{% endblock %}
+
+{%- macro project_options(placeholder) -%}
+  <option value="">{{ placeholder }}</option>
+  {% for project in projects %}
+  <option value="{{ project.id }}">{{ project.name }}</option>
+  {% endfor %}
+{%- endmacro -%}
+
+{%- macro kind_options() -%}
+  <option value="meeting">Réunion</option>
+  <option value="intervention">Intervention</option>
+  <option value="training">Formation</option>
+{%- endmacro -%}
+
+{% block content %}
+<div class="mn-root" id="mn-root" data-minutes-id="{{ minutes_id or '' }}" data-today="{{ today }}">
+
+  {#- ---------- Liste ---------- -#}
+  <section id="mn-list-view" hidden>
+    <header class="page-head">
+      <div>
+        <p class="page-kicker">Mémoire</p>
+        <h1 class="page-title">Comptes rendus</h1>
+      </div>
+      <div class="page-actions">
+        <label class="sr-only" for="mn-filter">Filtrer par projet</label>
+        <select id="mn-filter" class="mn-filter">
+          {{ project_options("Tous les projets") }}
+        </select>
+        <button type="button" class="btn-primary" id="mn-new">Nouveau compte rendu</button>
+      </div>
+    </header>
+
+    <div class="mn-list" id="mn-list" aria-live="polite">
+      <div class="skel skel-row"></div>
+      <div class="skel skel-row"></div>
+      <div class="skel skel-row"></div>
+    </div>
+  </section>
+
+  {#- ---------- Editeur ---------- -#}
+  <section id="mn-editor-view" class="mn-editor" hidden>
+    <a class="link mn-back no-print" href="{{ url_for('main.minutes') }}" id="mn-back">← Comptes rendus</a>
+
+    <div id="mn-missing" class="card empty" hidden>
+      <p>Ce compte rendu est introuvable : il a peut-être été supprimé.</p>
+      <a class="btn-ghost" href="{{ url_for('main.minutes') }}" data-nav-list>Revenir à la liste</a>
+    </div>
+
+    <div id="mn-doc" hidden>
+      <header class="card mn-head">
+        <div class="mn-head-top no-print">
+          <label class="sr-only" for="mn-title">Titre du compte rendu</label>
+          <input type="text" id="mn-title" class="mn-title-input" maxlength="200" data-field="title"
+                 placeholder="Titre du compte rendu" autocomplete="off">
+          <span class="mn-save no-print" id="mn-save-state" role="status">Enregistré</span>
+        </div>
+
+        <h1 class="mn-print-title print-only" id="mn-print-title"></h1>
+        <p class="mn-print-meta print-only" id="mn-print-meta"></p>
+
+        <div class="mn-meta no-print">
+          <div class="mn-meta-field">
+            <label for="mn-held-on">Date</label>
+            <input type="date" id="mn-held-on" data-field="held_on" required>
+          </div>
+          <div class="mn-meta-field">
+            <label for="mn-kind">Type</label>
+            <select id="mn-kind" data-field="kind">{{ kind_options() }}</select>
+          </div>
+          <div class="mn-meta-field mn-meta-project">
+            <label for="mn-project">Projet</label>
+            <select id="mn-project" data-field="project_id">{{ project_options("Aucun projet") }}</select>
+          </div>
+          <div class="mn-meta-field">
+            <span class="mn-meta-label">Statut</span>
+            <span class="badge" id="mn-status">Brouillon</span>
+          </div>
+        </div>
+
+        <div class="mn-head-actions no-print">
+          <button type="button" class="btn-ghost danger" id="mn-delete">Supprimer</button>
+          <button type="button" class="btn-ghost" id="mn-print">Imprimer</button>
+          <button type="button" class="btn-ghost" id="mn-reopen" hidden>Repasser en brouillon</button>
+          <button type="button" class="btn-primary" id="mn-finalize">Valider le compte rendu</button>
+        </div>
+      </header>
+
+      <div class="mn-layout">
+        <div class="mn-texts">
+          <section class="card mn-section" data-section="attendees">
+            <h2 class="card-title"><label for="mn-attendees">Participants</label></h2>
+            <textarea id="mn-attendees" data-field="attendees" rows="2"
+                      placeholder="Qui était là ? Un nom par ligne, avec la société si utile."></textarea>
+          </section>
+
+          <section class="card mn-section" data-section="objectives">
+            <h2 class="card-title"><label for="mn-objectives">Objectifs</label></h2>
+            <textarea id="mn-objectives" data-field="objectives" rows="2"
+                      placeholder="Pourquoi cette séance ?"></textarea>
+          </section>
+
+          <section class="card mn-section" data-section="discussed">
+            <h2 class="card-title"><label for="mn-discussed">Points discutés</label></h2>
+            <textarea id="mn-discussed" data-field="discussed" rows="4"
+                      placeholder="Ce qui a été abordé, point par point."></textarea>
+          </section>
+
+          <section class="card mn-section" data-section="topics" data-kinds="training">
+            <h2 class="card-title"><label for="mn-topics">Sujets enseignés</label></h2>
+            <textarea id="mn-topics" data-field="topics" rows="3"
+                      placeholder="Modules, écrans et procédures présentés."></textarea>
+          </section>
+
+          <section class="card mn-section" data-section="followups" data-kinds="training">
+            <h2 class="card-title"><label for="mn-followups">Points à revoir</label></h2>
+            <textarea id="mn-followups" data-field="followups" rows="2"
+                      placeholder="Ce qui n'est pas encore acquis et mérite une nouvelle séance."></textarea>
+          </section>
+
+          <section class="card mn-section" data-section="notes">
+            <h2 class="card-title"><label for="mn-notes" id="mn-notes-label">Notes</label></h2>
+            <textarea id="mn-notes" data-field="notes" rows="3" placeholder="Tout le reste."></textarea>
+          </section>
+        </div>
+
+        <div class="mn-items">
+          <section class="card mn-item-block" data-type="decision">
+            <h2 class="card-title">Décisions <span class="mn-count" data-count="decision"></span></h2>
+            <ul class="mn-item-list" data-list="decision"></ul>
+            <form class="mn-quick no-print" data-add="decision" autocomplete="off">
+              <label class="sr-only" for="mn-add-decision">Nouvelle décision</label>
+              <input type="text" id="mn-add-decision" name="text" maxlength="2000"
+                     placeholder="Ajouter une décision, puis Entrée">
+            </form>
+          </section>
+
+          <section class="card mn-item-block" data-type="action">
+            <h2 class="card-title">Actions <span class="mn-count" data-count="action"></span></h2>
+            <ul class="mn-item-list" data-list="action"></ul>
+            <form class="mn-quick mn-quick-action no-print" data-add="action" autocomplete="off">
+              <label class="sr-only" for="mn-add-action">Nouvelle action</label>
+              <input type="text" id="mn-add-action" name="text" maxlength="2000"
+                     placeholder="Ajouter une action, puis Entrée">
+              <div class="mn-quick-extra">
+                <label class="sr-only" for="mn-add-owner">Responsable</label>
+                <input type="text" id="mn-add-owner" name="owner" maxlength="200" placeholder="Responsable">
+                <label class="sr-only" for="mn-add-due">Échéance</label>
+                <input type="date" id="mn-add-due" name="due" title="Échéance">
+                <button type="submit" class="btn-ghost">Ajouter</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="card mn-item-block" data-type="request">
+            <h2 class="card-title">Demandes du client <span class="mn-count" data-count="request"></span></h2>
+            <ul class="mn-item-list" data-list="request"></ul>
+            <form class="mn-quick no-print" data-add="request" autocomplete="off">
+              <label class="sr-only" for="mn-add-request">Nouvelle demande du client</label>
+              <input type="text" id="mn-add-request" name="text" maxlength="2000"
+                     placeholder="Ajouter une demande, puis Entrée">
+            </form>
+          </section>
+
+          <section class="card mn-attachments no-print" aria-labelledby="mn-attachments-title">
+            <h2 class="card-title" id="mn-attachments-title">Pièces jointes</h2>
+            <div id="mn-attachments"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {#- ---------- Fenetres ---------- -#}
+  <dialog class="modal" id="mn-new-modal">
+    <form id="mn-new-form" autocomplete="off">
+      <h2>Nouveau compte rendu</h2>
+      <p class="error-box" id="mn-new-error" hidden></p>
+
+      <label for="mn-new-title">Titre</label>
+      <input type="text" id="mn-new-title" maxlength="200" required placeholder="Point d'avancement ORION">
+
+      <div class="modal-row">
+        <div>
+          <label for="mn-new-date">Date</label>
+          <input type="date" id="mn-new-date" required>
+        </div>
+        <div>
+          <label for="mn-new-kind">Type</label>
+          <select id="mn-new-kind">{{ kind_options() }}</select>
+        </div>
+      </div>
+
+      <label for="mn-new-project">Projet</label>
+      <select id="mn-new-project">{{ project_options("Aucun projet") }}</select>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="mn-new-cancel">Annuler</button>
+        <button type="submit" class="btn-primary" id="mn-new-save">Créer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="mn-delete-modal">
+    <h2>Supprimer ce compte rendu ?</h2>
+    <p class="mn-modal-text">
+      Le compte rendu et ses éléments disparaissent. Les tâches et les entrées de registre
+      déjà créées restent en place.
+    </p>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="mn-delete-cancel">Annuler</button>
+      <button type="button" class="btn-primary mn-danger" id="mn-delete-confirm">Supprimer</button>
+    </div>
+  </dialog>
+
+  <dialog class="modal" id="mn-pending-modal">
+    <h2>Compte rendu validé</h2>
+    <p class="mn-modal-text" id="mn-pending-text"></p>
+    <ul class="mn-pending-list" id="mn-pending-list"></ul>
+    <p class="mn-modal-text mn-modal-hint" id="mn-pending-hint" hidden></p>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="mn-pending-later">Plus tard</button>
+      <button type="button" class="btn-primary" id="mn-pending-convert">Tout convertir</button>
+    </div>
+  </dialog>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/minutes.js') }}"></script>
+{% endblock %}

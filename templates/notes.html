@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% set page_styles = ["notes"] %}
+
+{% block title %}NOMAIA — Notes{% endblock %}
+
+{% block header_date %}<span id="header-date" data-today="{{ today }}"></span>{% endblock %}
+
+{% block content %}
+  <header class="page-head">
+    <div>
+      <p class="page-kicker">Base de connaissances</p>
+      <h1 class="page-title">Notes</h1>
+    </div>
+    <div class="page-actions">
+      <details class="nt-menu" id="nt-menu">
+        <summary class="btn-ghost">Modèle <span aria-hidden="true">▾</span></summary>
+        <div class="nt-menu-list">
+          <button type="button" class="nt-menu-item" id="nt-template-deploy">
+            <strong>Déploiement</strong>
+            <span>Contexte, changements, vérifications, résultat</span>
+          </button>
+        </div>
+      </details>
+      <button type="button" class="btn-primary" id="nt-new">Nouvelle note</button>
+    </div>
+  </header>
+
+  <div class="nt-layout" id="nt-layout" data-note-id="{{ note_id or '' }}">
+    <aside class="nt-side" aria-label="Liste des notes">
+      <section class="card nt-filters" aria-label="Filtres">
+        <div class="nt-field">
+          <label for="nt-project">Projet</label>
+          <select id="nt-project">
+            <option value="">Tous les projets</option>
+            {% for project in projects %}
+            <option value="{{ project.id }}" data-color="{{ project.color or '' }}">{{ project.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div id="nt-facets"></div>
+      </section>
+
+      <div class="nt-list" id="nt-list" aria-live="polite">
+        <div class="skel skel-row"></div>
+        <div class="skel skel-row"></div>
+        <div class="skel skel-row"></div>
+      </div>
+    </aside>
+
+    <section class="card nt-pane" id="nt-pane" aria-label="Note ouverte">
+      <div class="skel skel-line"></div>
+      <div class="skel skel-line"></div>
+    </section>
+  </div>
+
+  <dialog class="modal" id="nt-confirm">
+    <form method="dialog">
+      <h2 id="nt-confirm-title">Supprimer la note ?</h2>
+      <p class="nt-confirm-text" id="nt-confirm-text"></p>
+      <div class="modal-actions">
+        <button type="submit" value="cancel" class="btn-ghost">Annuler</button>
+        <button type="submit" value="ok" class="btn-primary nt-danger" id="nt-confirm-ok">Supprimer</button>
+      </div>
+    </form>
+  </dialog>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/markdown.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/notes.js') }}"></script>
+{% endblock %}

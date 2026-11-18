@@ -1,0 +1,673 @@
+/* NOMAIA — coquille de l'application : fond, barre laterale, en-tete, menu mobile.
+ *
+ * Grand ecran (> 860 px) : barre laterale groupee + en-tete collant.
+ * Telephone : en-tete compact + bulle de navigation en bas (static/js/nav.js)
+ * et panneau « Plus » pour les pages secondaires.
+ *
+ * Seuls la barre laterale, l'en-tete et les fenetres portent un flou : un
+ * backdrop-filter par ligne de liste coutait cher a WebView2 sur une journee.
+ */
+
+* { box-sizing: border-box; }
+
+/* L'attribut hidden l'emporte toujours : sans cela, un display: flex pose
+   sur une classe laissait visible un element que le script avait masque. */
+[hidden] { display: none !important; }
+
+html { background: var(--bg); }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.55 var(--font);
+  font-variant-numeric: tabular-nums;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent-text); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::selection { background: var(--accent-ring); }
+
+* { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+
+/* --- Fond : aurore cyan / indigo ------------------------------------------ */
+/* Degrades deja doux : aucun filtre de flou. Fixe par defaut ; le reglage
+   « Fond anime » (html[data-ambient="on"]) le fait deriver par transform. */
+
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.aurora-layer {
+  position: absolute;
+  left: -15%;
+  top: -25%;
+  width: 130%;
+  height: 125%;
+  background:
+    radial-gradient(900px 520px at 84% 6%, var(--aurora-2), transparent 62%),
+    radial-gradient(820px 480px at 10% 2%, var(--aurora-1), transparent 58%),
+    radial-gradient(700px 420px at 55% 72%, var(--aurora-3), transparent 60%);
+}
+
+/* --- Gabarit --------------------------------------------------------------- */
+
+.app {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 24px 0 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 24px 4px 90px;
+}
+
+/* --- Barre laterale -------------------------------------------------------- */
+
+.sidebar {
+  position: sticky;
+  top: 12px;
+  flex: 0 0 var(--sidebar-w);
+  width: var(--sidebar-w);
+  height: calc(100vh - 24px);
+  margin: 12px;
+  padding: 16px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  border-radius: var(--radius-xl);
+  background: var(--chrome);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 8px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 10px;
+  background: #22d3ee;
+  color: #04131a;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.brand-name {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+}
+
+.side-group { display: flex; flex-direction: column; gap: 2px; }
+
+.side-title {
+  margin: 0 0 4px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.side-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: background-color var(--dur) ease, color var(--dur) ease, box-shadow 0.28s ease;
+}
+
+.side-link:hover { background-color: var(--surface-sunken); color: var(--text); }
+
+.side-link.active {
+  background-color: var(--accent-soft);
+  color: var(--text-strong);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.side-link.active .nav-icon { stroke: var(--accent); stroke-width: 2.1; }
+
+.side-badge {
+  margin-left: auto;
+  min-width: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--p2-soft);
+  color: var(--p2-text);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.side-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-icon {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--dur-fast);
+}
+
+.nav-more .nav-icon circle { fill: currentColor; stroke: none; }
+
+/* --- En-tete --------------------------------------------------------------- */
+
+.topbar {
+  position: sticky;
+  top: 12px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--topbar-h);
+  padding: 8px 10px;
+  border-radius: var(--radius-lg);
+  background: var(--chrome);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
+}
+
+.topbar .brand { display: none; }
+
+.cmdk-trigger {
+  flex: 1 1 280px;
+  max-width: 460px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: var(--surface-sunken);
+  color: var(--text-dim);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--dur) ease, background-color var(--dur) ease;
+}
+
+.cmdk-trigger:hover { border-color: var(--line-strong); }
+.cmdk-trigger span { flex: 1; }
+.cmdk-trigger svg { width: 16px; height: 16px; flex: none; }
+
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Espace affiche : Tout / Pro / Perso. */
+.space-switch { display: flex; gap: 4px; }
+.space-switch .chip { padding: 3px 10px; font-size: 12px; }
+.space-create {
+  padding: 2px 6px;
+  border: 1px dashed var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 12px;
+}
+
+/* Badge d'espace sur une ligne, en mode Tout (J.spaceBadge). */
+.space-badge { margin-left: 6px; vertical-align: middle; }
+
+.topbar-date {
+  color: var(--text-dim);
+  font-size: 12px;
+  font-family: var(--mono);
+  text-transform: capitalize;
+}
+
+/* Chronometre en cours, visible de partout. */
+.chrono-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 6px 0 12px;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-ring);
+  max-width: 380px;
+}
+
+.chrono-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.chrono-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--accent);
+  animation: respire 1.8s ease-out infinite;
+}
+
+.chrono-title {
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+}
+
+.chrono-time {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--accent-text);
+}
+
+.chrono-stop {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  cursor: pointer;
+  transition: transform 0.12s ease, filter var(--dur) ease;
+}
+
+.chrono-stop:hover { filter: brightness(1.2); }
+.chrono-stop:active { transform: scale(0.94); }
+.chrono-stop svg { width: 12px; height: 12px; }
+
+/* Moteur de triage : nom du modele et etat. */
+.engine {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--ok-soft);
+  border-radius: 999px;
+  color: var(--ok-text);
+  font-family: var(--mono);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.engine::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.engine.ko { color: var(--p1-text); border-color: var(--p1-soft); }
+
+.theme-toggle .icon-sun { display: none; }
+:root[data-theme="light"] .theme-toggle .icon-sun { display: block; }
+:root[data-theme="light"] .theme-toggle .icon-moon { display: none; }
+
+/* --- En-tete de page -------------------------------------------------------- */
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 0 0 20px;
+  padding: 0 4px;
+}
+
+.page-head > div:first-child { flex: 1 1 320px; min-width: 0; }
+
+.page-kicker { margin: 0; font-size: 13px; color: var(--text-dim); }
+
+.page-title {
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-strong);
+}
+
+.page-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* --- Menu mobile : bulle en bas, panneau « Plus » --------------------------- */
+
+.nav { display: none; }
+
+.nav-link {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  background: none;
+  color: var(--text-dim);
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--dur);
+}
+
+.nav-link.active { color: var(--accent-text); }
+.nav:not(.has-bubble) .nav-link.active { background: var(--accent-soft); }
+
+.nav-bubble {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent-ring);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform;
+  transition:
+    transform 0.5s var(--ease-spring),
+    width 0.5s var(--ease-spring),
+    opacity 0.2s;
+}
+
+.nav-bubble.is-instant { transition: none; }
+
+.nav-sheet {
+  position: fixed;
+  inset: auto 0 0 0;
+  margin: 0 auto;
+  width: min(520px, 100%);
+  max-width: 100%;
+  padding: 10px 16px calc(22px + env(safe-area-inset-bottom));
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 28px 28px 0 0;
+  background: var(--surface-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-pop);
+}
+
+.nav-sheet[open] { animation: monte 0.34s var(--ease-spring); }
+.nav-sheet::backdrop { background: var(--overlay); }
+
+.nav-sheet-grip {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: 2px auto 16px;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.nav-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.nav-sheet-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface-sunken);
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12px;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-fast), color var(--dur-fast);
+}
+
+.nav-sheet-item .nav-icon { width: 26px; height: 26px; }
+.nav-sheet-item:active { transform: scale(0.95); }
+.nav-sheet-item.active { color: var(--accent-text); border-color: var(--accent-ring); background: var(--accent-soft); }
+
+/* --- Ecrans moyens : barre laterale plus etroite ---------------------------- */
+
+@media (max-width: 1180px) {
+  :root { --sidebar-w: 216px; }
+  .topbar-date { display: none; }
+}
+
+/* --- Telephone -------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .sidebar { display: none; }
+
+  .app-main { padding: 0; }
+
+  /* En-tete compact. Sans backdrop-filter : il ferait de la barre le repere
+     des elements fixes, et la bulle du menu resterait collee en haut. */
+  .topbar {
+    top: 0;
+    border-radius: 0;
+    border-width: 0 0 1px;
+    padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
+    background: var(--surface-strong);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .topbar .brand { display: flex; padding: 0; }
+  .topbar .brand-name { display: none; }
+  .cmdk-trigger { flex: 1 1 auto; }
+  .cmdk-trigger kbd, .engine, .chrono-title { display: none; }
+
+  .container { padding: 18px 14px calc(112px + env(safe-area-inset-bottom)); }
+
+  .nav {
+    position: fixed;
+    z-index: 30;
+    left: 50%;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    width: min(440px, calc(100% - 24px));
+    display: flex;
+    align-items: center;
+    padding: 6px;
+    border-radius: 999px;
+    transform: translateX(-50%);
+    background: var(--chrome);
+    backdrop-filter: blur(22px) saturate(170%);
+    -webkit-backdrop-filter: blur(22px) saturate(170%);
+    border: 1px solid var(--line);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  .nav-link {
+    flex: 1 1 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    min-height: 54px;
+    padding: 6px 2px;
+    border-radius: 999px;
+    font-size: 10.5px;
+  }
+
+  .nav .nav-icon { width: 22px; height: 22px; }
+  .nav-link:active .nav-icon { transform: scale(0.88); }
+  .nav-secondary { display: none; }
+
+  /* Clavier ouvert : la bulle s'efface pour laisser la place a la saisie. */
+  body.is-typing .nav {
+    transform: translate(-50%, 160%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .page-title { font-size: 22px; }
+}
+
+/* --- Page d'acces refuse (hors gabarit) ------------------------------------- */
+
+.access-page .container { max-width: 520px; }
+
+/* --- Bas de la barre laterale : fond anime et utilisateur (maquette) ---------- */
+
+.side-switch {
+  justify-content: space-between;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: var(--surface-sunken);
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.side-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-soft);
+}
+
+.side-avatar {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--accent-2-soft);
+  color: var(--accent-2-text);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.side-user-text { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.side-user-name { margin: 0; font-weight: 600; font-size: 13px; color: var(--text-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.side-user .engine { align-self: flex-start; min-height: 22px; font-size: 10.5px; }
+
+/* --- Cloche de notifications (maquette) ------------------------------------ */
+
+.notif { position: relative; }
+.notif-button { position: relative; }
+
+.notif-dot {
+  position: absolute;
+  top: 8px;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--p2);
+}
+
+.notif-dot.is-danger { background: var(--p1); }
+
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  width: min(340px, calc(100vw - 24px));
+  padding: 10px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-pop);
+  animation: zoom-in var(--dur) var(--ease-out);
+}
+
+.notif-title { margin: 2px 6px 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
+.notif-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+
+.notif-list a {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.notif-list a:hover { background: var(--surface-sunken); }
+.notif-list a::before { content: ""; width: 7px; height: 7px; flex: none; margin-top: 6px; border-radius: 999px; background: var(--accent); }
+.notif-list .is-warn a::before { background: var(--p2); }
+.notif-list .is-danger a::before { background: var(--p1); }
+.notif-empty { padding: 8px; font-size: 13px; color: var(--text-dim); }
+
+@media (max-width: 860px) {
+  .notif-panel { position: fixed; top: 64px; right: 12px; }
+}

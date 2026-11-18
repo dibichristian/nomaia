@@ -1,0 +1,66 @@
+/* NOMAIA — impression et « Enregistrer en PDF » (lot 9).
+ *
+ * Le navigateur (ou WebView2) imprime la page telle quelle : la coquille
+ * disparait, le fond devient blanc, le texte noir, et les cartes ne sont
+ * pas coupees entre deux pages. Aucune dependance : meme rendu que l'ecran.
+ */
+
+@page { margin: 16mm 14mm; }
+
+:root,
+:root[data-theme="dark"],
+:root[data-theme="light"] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-hover: #ffffff;
+  --surface-strong: #ffffff;
+  --surface-sunken: #f4f6f8;
+  --chrome: #ffffff;
+  --line: #d5dbe1;
+  --line-soft: #e6eaee;
+  --text: #111111;
+  --text-strong: #000000;
+  --text-dim: #444c55;
+  --accent: #0e7490;
+  --accent-text: #0e7490;
+  --accent-soft: #eef7fa;
+  --shadow-card: none;
+  color-scheme: light;
+}
+
+html, body { background: #ffffff !important; color: #111111; }
+
+.aurora,
+.sidebar,
+.topbar,
+#main-nav,
+.nav-sheet,
+.cmdk,
+.toast,
+.page-actions,
+.no-print,
+.btn-primary,
+.btn-ghost,
+.icon-btn,
+.att-add,
+.att-hint,
+button:not(.link):not(.rs-ref) { display: none !important; }
+
+/* Boutons-liens (titres de taches, references) : imprimes comme du texte. */
+button.link, .rs-ref { all: unset; display: inline; }
+
+.app, .app-main { display: block; padding: 0; }
+.container { max-width: none; padding: 0; }
+
+/* Aucune animation a l'impression : tout est visible tout de suite. */
+*, *::before, *::after { animation: none !important; transition: none !important; }
+
+.card, .stat, .project, .review-box, .rs-block, .pj-panel, .bl-project {
+  break-inside: avoid;
+  box-shadow: none !important;
+}
+
+h1, h2, h3 { break-after: avoid; }
+a { color: inherit; text-decoration: none; }
+.page-title { font-size: 20pt; }
+body { font-size: 10.5pt; }

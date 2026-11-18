@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+{% set page_styles = ["contacts"] %}
+
+{% block title %}NOMAIA — Contacts{% endblock %}
+
+{% block header_date %}<span id="header-date" data-today="{{ today }}"></span>{% endblock %}
+
+{% block content %}
+  <header class="page-head">
+    <div>
+      <p class="page-kicker">Relances et interlocuteurs</p>
+      <h1 class="page-title">Contacts</h1>
+    </div>
+  </header>
+
+  <p class="error-box ct-error" id="ct-error" hidden></p>
+
+  <section class="ct-zone">
+    <div class="group-head ct-head-late">
+      <h2 class="group-title">À relancer</h2>
+      <span class="group-count" id="ct-wait-count">—</span>
+    </div>
+
+    <form class="quick-add ct-add" id="ct-wait-add" autocomplete="off">
+      <select id="ct-wa-person" title="De qui attends-tu quelque chose ?">
+        <option value="">Qui ?</option>
+      </select>
+      <input type="text" id="ct-wa-subject" placeholder="Ce qu'on me doit (specs, validation, accès…)" maxlength="300">
+      <input type="date" id="ct-wa-due" title="Date limite de la relance">
+      <button type="submit" class="btn-primary" id="ct-wa-save">Ajouter l'attente</button>
+    </form>
+
+    <div id="ct-wait-list">
+      <p class="empty">Chargement…</p>
+    </div>
+  </section>
+
+  <section class="ct-zone">
+    <div class="group-head">
+      <h2 class="group-title">Interlocuteurs</h2>
+      <span class="group-count" id="ct-person-count">—</span>
+      <select class="ct-person-filter" id="ct-person-filter" aria-label="Filtrer par projet">
+        <option value="">Tous les projets</option>
+        {% for project in projects or [] %}
+          <option value="{{ project.id }}">{{ project.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <form class="quick-add ct-add" id="ct-person-add" autocomplete="off">
+      <input type="text" id="ct-pe-name" placeholder="Nom" maxlength="120">
+      <input type="text" id="ct-pe-role" placeholder="Rôle (chef de projet, DSI…)" maxlength="120">
+      <select id="ct-pe-project" title="Projet principal (d'autres s'ajoutent depuis la fiche)">
+        <option value="">Sans projet</option>
+        {% for project in projects or [] %}
+          <option value="{{ project.id }}">{{ project.name }}</option>
+        {% endfor %}
+      </select>
+      <input type="email" id="ct-pe-email" placeholder="Email" maxlength="200">
+      <input type="text" id="ct-pe-phone" placeholder="Téléphone" maxlength="40">
+      <input type="text" id="ct-pe-notes" placeholder="Notes" maxlength="300">
+      <button type="submit" class="btn-primary" id="ct-pe-save">Ajouter</button>
+    </form>
+
+    <div id="ct-person-list">
+      <p class="empty">Chargement…</p>
+    </div>
+  </section>
+
+  <dialog class="modal ct-modal" id="ct-person-modal">
+    <div class="ct-sheet-head">
+      <div>
+        <h2 id="ct-sheet-name">Interlocuteur</h2>
+        <p class="ct-sheet-meta" id="ct-sheet-meta"></p>
+      </div>
+      <button type="button" class="icon-btn" id="ct-sheet-close" title="Fermer">✕</button>
+    </div>
+
+    <p class="error-box" id="ct-sheet-error" hidden></p>
+
+    <div class="ct-sheet-body" id="ct-sheet-body"></div>
+
+    <div class="modal-actions ct-sheet-actions">
+      <button type="button" class="btn-ghost danger" id="ct-sheet-delete">Supprimer l'interlocuteur</button>
+      <button type="button" class="btn-ghost" id="ct-sheet-merge">Fusionner un doublon</button>
+      <button type="button" class="btn-ghost" id="ct-sheet-edit">Modifier</button>
+      <a class="btn-ghost" href="{{ url_for('main.dashboard') }}">Voir les tâches</a>
+    </div>
+  </dialog>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/contacts.js') }}"></script>
+{% endblock %}

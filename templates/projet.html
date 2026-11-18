@@ -1,0 +1,312 @@
+{% extends "layout.html" %}
+{% set page_styles = ["pilot", "projets"] %}
+
+{% block title %}NOMAIA — {{ project.name }}{% endblock %}
+
+{% block header_date %}<span id="header-date" data-today="{{ today }}"></span>{% endblock %}
+
+{% block content %}
+  <div id="pj-root" data-project-id="{{ project.id }}">
+    <header class="page-head pj-head">
+      <div>
+        <p class="page-kicker pj-kicker">
+          <a class="link pj-back" href="{{ url_for('main.projects') }}">← Projets</a>
+          <span class="pj-status" id="pj-status"></span>
+        </p>
+        <h1 class="page-title pj-title-row">
+          <span class="pj-head-dot" id="pj-dot" aria-hidden="true"></span>
+          <span id="pj-title">{{ project.name }}</span>
+        </h1>
+        <p class="pj-head-meta">
+          <span id="pj-weather"></span>
+          <span class="pj-head-deadline" id="pj-deadline"></span>
+        </p>
+      </div>
+      <div class="page-actions pj-head-actions">
+        <button type="button" class="btn-ghost" id="pj-attach" hidden></button>
+        <button type="button" class="btn-ghost" onclick="window.print()" title="Imprimer la fiche, ou « Enregistrer en PDF »">Imprimer / PDF</button>
+        <button type="button" class="btn-ghost" id="pj-edit">Modifier</button>
+        <button type="button" class="btn-ghost" id="pj-merge">Fusionner…</button>
+        <button type="button" class="btn-ghost danger" id="pj-delete">Supprimer</button>
+      </div>
+    </header>
+
+    <p class="pl-weather-note" id="pj-weather-note" hidden></p>
+
+    <section class="stats pj-kpis" id="pj-kpis"></section>
+    <div class="pj-signals pj-signals-head" id="pj-signals"></div>
+
+    <section class="card rs-panel" id="rs-panel" aria-labelledby="rs-title">
+      <div class="rs-head">
+        <h2 class="card-title" id="rs-title">Où en étais-je ?</h2>
+        <div class="rs-tabs" role="tablist" aria-label="Vue">
+          <button type="button" role="tab" data-tab="synthese" aria-selected="true">Synthèse</button>
+          <button type="button" role="tab" data-tab="chrono" aria-selected="false">Chronologie</button>
+        </div>
+        <button type="button" class="btn-ghost" id="rs-ai" title="Résumé rédigé par l'IA, sources citées">Résumé IA</button>
+      </div>
+      <div class="rs-ai" id="rs-ai-box" hidden></div>
+      <div id="rs-body"><div class="skel skel-row"></div><div class="skel skel-row"></div></div>
+    </section>
+
+    <section class="pj-panel pl-phases-panel">
+      <div class="pl-phases-head">
+        <h2 class="card-title">Étapes du projet</h2>
+        <div class="pl-phases-actions">
+          <button type="button" class="btn-ghost" id="pl-template" hidden>Appliquer le gabarit d'étapes</button>
+          <button type="button" class="btn-ghost" id="pl-phase-new">Ajouter une étape</button>
+        </div>
+      </div>
+      <div id="pl-phases-summary"></div>
+    </section>
+
+    <section class="pj-panel pj-files">
+      <h2 class="card-title">Documents du projet</h2>
+      <div id="pj-attachments"></div>
+    </section>
+
+    <section class="pl-quality">
+      <section class="pj-panel">
+        <h2 class="card-title">Anomalies</h2>
+        <div id="pl-anomalies"></div>
+      </section>
+      <section class="pj-panel">
+        <h2 class="card-title">Livrables du client</h2>
+        <div id="pl-deliverables"></div>
+      </section>
+      <section class="pj-panel">
+        <h2 class="card-title">Registre</h2>
+        <div id="pl-register"></div>
+      </section>
+    </section>
+
+    <div class="pj-layout">
+      <section class="pj-main">
+        <form class="quick-add pj-task-add" id="pj-task-add" autocomplete="off">
+          <input type="text" id="pj-task-title" placeholder="Nouvelle tâche pour ce projet…" maxlength="300" required>
+          <input type="number" id="pj-task-estimate" min="5" max="1440" step="5" value="60" title="Durée (min)">
+          <input type="date" id="pj-task-deadline" title="Échéance">
+          <select id="pj-task-phase" title="Étape du projet" hidden></select>
+          <select id="pj-task-kind" title="Nature">
+            <option value="task">Tâche</option>
+            <option value="anomaly">Anomalie</option>
+            <option value="deliverable">Livrable client</option>
+          </select>
+          <select id="pj-task-severity" title="Gravité de l'anomalie" hidden>
+            <option value="critical">Critique</option>
+            <option value="major" selected>Majeure</option>
+            <option value="minor">Mineure</option>
+          </select>
+          <button type="submit" class="btn-primary">Ajouter</button>
+        </form>
+
+        <div id="pj-tasks"><p class="empty">Chargement…</p></div>
+      </section>
+
+      <aside class="pj-side">
+        <section class="pj-panel">
+          <h2 class="card-title">Statut des tâches</h2>
+          <div id="pl-donut"></div>
+        </section>
+
+        <section class="pj-panel">
+          <h2 class="card-title">À surveiller</h2>
+          <div id="pl-watch"></div>
+        </section>
+
+        <section class="pj-panel">
+          <h2 class="card-title">Commentaires et journal</h2>
+          <form class="pj-comment-add" id="pj-comment-add" autocomplete="off">
+            <textarea id="pj-comment" rows="2" maxlength="4000"
+              placeholder="Décision, point d'étape, blocage…"></textarea>
+            <div class="pj-comment-opts">
+              <select id="pj-comment-kind" title="Type d'entrée">
+                <option value="note">Commentaire</option>
+                <option value="decision">Décision (registre)</option>
+                <option value="scope">Changement de périmètre (registre)</option>
+                <option value="dependency">Dépendance (registre)</option>
+              </select>
+              <label class="check-inline" id="pj-comment-follow-wrap" hidden>
+                <input type="checkbox" id="pj-comment-follow" checked>
+                Ouvrir une tâche de suivi
+              </label>
+            </div>
+            <button type="submit" class="btn-primary">Publier</button>
+          </form>
+          <ul class="pj-journal" id="pj-journal"></ul>
+        </section>
+
+        <section class="pj-panel">
+          <h2 class="card-title">Activité des dernières semaines</h2>
+          <div id="pj-activity"></div>
+        </section>
+
+        <section class="pj-panel">
+          <h2 class="card-title">Interlocuteurs</h2>
+          <div id="pj-people"></div>
+        </section>
+
+        <section class="pj-panel">
+          <h2 class="card-title">Prochains rendez-vous</h2>
+          <div id="pj-events"></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <dialog class="modal" id="pj-edit-modal">
+    <form id="pj-edit-form" autocomplete="off">
+      <h2>Modifier le projet</h2>
+      <p class="error-box" id="pj-edit-error" hidden></p>
+      <label for="pj-ed-name">Nom</label>
+      <input type="text" id="pj-ed-name" maxlength="120" required>
+      <div class="modal-row">
+        <div>
+          <label for="pj-ed-color">Couleur</label>
+          <input type="color" id="pj-ed-color">
+        </div>
+        <div>
+          <label for="pj-ed-deadline">Échéance</label>
+          <input type="date" id="pj-ed-deadline">
+        </div>
+      </div>
+      <div class="modal-row">
+        <div>
+          <label for="pj-ed-client">Client</label>
+          <input type="text" id="pj-ed-client" maxlength="120" placeholder="Raison sociale">
+        </div>
+        <div>
+          <label for="pj-ed-odoo">Version d'Odoo</label>
+          <input type="text" id="pj-ed-odoo" maxlength="20" list="pj-ed-odoo-list" placeholder="17.0">
+          <datalist id="pj-ed-odoo-list"><option value="16.0"><option value="17.0"><option value="18.0"><option value="19.0"></datalist>
+        </div>
+      </div>
+      <div class="modal-row">
+        <div>
+          <label for="pj-ed-space">Espace</label>
+          <select id="pj-ed-space">
+            <option value="pro">Pro</option>
+            <option value="perso">Perso</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-row">
+        <div>
+          <label for="pj-ed-status">Statut</label>
+          <select id="pj-ed-status">
+            <option value="active">Actif</option>
+            <option value="paused">En pause</option>
+            <option value="done">Terminé</option>
+          </select>
+        </div>
+        <div>
+          <label for="pj-ed-go-live">Mise en production visée</label>
+          <input type="date" id="pj-ed-go-live">
+        </div>
+      </div>
+      <label for="pj-ed-manager">Chef de projet (reçoit le rapport d'avancement)</label>
+      <select id="pj-ed-manager">
+        <option value="">Aucun</option>
+      </select>
+      <label for="pj-ed-weather">Météo</label>
+      <select id="pj-ed-weather">
+        <option value="">Non renseignée</option>
+        <option value="sunny">☀️ Ensoleillé</option>
+        <option value="fair">🌤️ Éclaircies</option>
+        <option value="cloudy">☁️ Nuageux</option>
+        <option value="rainy">🌧️ Pluvieux</option>
+        <option value="stormy">⛈️ Orageux</option>
+      </select>
+      <label for="pj-ed-weather-note">Point d'attention (justifie la météo)</label>
+      <textarea id="pj-ed-weather-note" rows="3" maxlength="1000"></textarea>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="pj-ed-cancel">Annuler</button>
+        <button type="submit" class="btn-primary">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="pj-merge-modal">
+    <form id="pj-merge-form" autocomplete="off">
+      <h2>Fusionner un projet ici</h2>
+      <p class="config-help">Le projet choisi disparaît : ses tâches, son journal, ses contacts,
+         ses événements et ses liens Odoo passent dans <strong id="pj-mg-target"></strong>, qui
+         garde son nom et ses étapes. Ses propres étapes sont supprimées : ses tâches arrivent
+         « Sans étape ».</p>
+      <p class="error-box" id="pj-merge-error" hidden></p>
+      <label for="pj-mg-source">Projet en double</label>
+      <select id="pj-mg-source" required></select>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="pj-mg-cancel">Annuler</button>
+        <button type="submit" class="btn-primary">Fusionner</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="pl-phase-modal">
+    <form id="pl-phase-form" autocomplete="off">
+      <h2 id="pl-phase-title">Étape du projet</h2>
+      <p class="error-box" id="pl-phase-error" hidden></p>
+      <label for="pl-ph-name">Nom</label>
+      <input type="text" id="pl-ph-name" maxlength="120" required>
+      <div class="modal-row">
+        <div>
+          <label for="pl-ph-stage">Grande étape</label>
+          <input type="text" id="pl-ph-stage" maxlength="60" list="pl-stage-list" placeholder="Cadrage…">
+          <datalist id="pl-stage-list">
+            <option value="Cadrage">
+            <option value="Réalisation">
+            <option value="Validation">
+            <option value="Déploiement">
+            <option value="Support">
+          </datalist>
+        </div>
+        <div>
+          <label for="pl-ph-weight">Poids (points)</label>
+          <input type="number" id="pl-ph-weight" min="0" max="100" step="1">
+        </div>
+      </div>
+      <div class="modal-row">
+        <div>
+          <label for="pl-ph-status">Statut</label>
+          <select id="pl-ph-status">
+            <option value="todo">À venir</option>
+            <option value="doing">En cours</option>
+            <option value="blocked">Bloquée</option>
+            <option value="done">Terminée</option>
+          </select>
+        </div>
+        <div>
+          <label for="pl-ph-progress">Avancement (%)</label>
+          <input type="number" id="pl-ph-progress" min="0" max="100" step="5">
+        </div>
+      </div>
+      <p class="plan-hint" id="pl-ph-progress-hint" hidden>Cette étape a des tâches : son avancement est calculé à partir d'elles.</p>
+      <div class="modal-row">
+        <div>
+          <label for="pl-ph-planned">Date prévue</label>
+          <input type="date" id="pl-ph-planned">
+        </div>
+        <div>
+          <label for="pl-ph-done">Date de fin réelle</label>
+          <input type="date" id="pl-ph-done">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost danger" id="pl-ph-delete">Supprimer</button>
+        <button type="button" class="btn-ghost" id="pl-ph-cancel">Annuler</button>
+        <button type="submit" class="btn-primary">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  {% include "_task_detail.html" %}
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/pilot.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/task_detail.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/projet.js') }}"></script>
+<script src="{{ url_for('static', filename='js/resume.js') }}"></script>
+<script>window.JAttachments.mount(document.getElementById("pj-attachments"), "project", {{ project.id }});</script>
+{% endblock %}

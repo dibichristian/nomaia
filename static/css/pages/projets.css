@@ -1,0 +1,351 @@
+/* NOMAIA — projets (tableau de bord) et fiche projet.
+ *
+ * Couleurs : jetons uniquement. --pj-color, couleur propre a chaque projet,
+ * vient des donnees : elle ne sert qu'aux pastilles et filets de couleur.
+ */
+
+/* --- Liens et textes secondaires --------------------------------------------- */
+
+
+/* Texte secondaire : --text-dim, jamais --text-faint (reserve au decor). */
+.pj-faint { color: var(--text-dim); font-size: 12.5px; }
+
+/* --- Projets : en-tete et barre d'outils -------------------------------------- */
+
+.pj-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+
+.pj-toolbar { margin-bottom: 18px; }
+.pj-add { margin: 0; align-items: center; }
+.pj-add .check-inline { color: var(--text-dim); }
+
+/* --- Projets : cartes ------------------------------------------------------------ */
+
+.pj-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(290px, 100%), 1fr));
+  gap: 12px;
+}
+
+.pj-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+}
+
+.pj-panel .card-title { margin: 0 0 12px; font-size: 14px; }
+
+.pj-card {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--pj-color, var(--accent));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  color: var(--text);
+  text-decoration: none;
+  transition: translate var(--dur) var(--ease-out), border-color var(--dur) ease;
+}
+
+/* Soulevement de 2 px et bordure d'accent ; le filet du projet reste.
+   Propriete `translate` et non `transform` : .anim-in garde la main sur transform. */
+.pj-card:hover {
+  translate: 0 -2px;
+  border-color: var(--accent-ring);
+  border-top-color: var(--pj-color, var(--accent));
+}
+
+.pj-card.has-signal { border-color: color-mix(in srgb, var(--p2) 40%, transparent); border-top-color: var(--pj-color, var(--accent)); }
+.pj-card.has-signal:hover { border-color: var(--accent-ring); border-top-color: var(--pj-color, var(--accent)); }
+
+.pj-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.pj-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pj-name { font-weight: 650; font-size: 15px; color: var(--text-strong); overflow-wrap: anywhere; }
+
+/* Statut du projet : pastille douce, texte contraste. */
+.pj-status {
+  --st: var(--p4);
+  --st-text: var(--p4-text);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  background: color-mix(in srgb, var(--st) 14%, transparent);
+  color: var(--st-text);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.pj-status:empty { display: none; }
+.pj-status.s-active { --st: var(--ok); --st-text: var(--ok-text); }
+.pj-status.s-paused { --st: var(--p2); --st-text: var(--p2-text); }
+.pj-status.s-done { --st: var(--p4); --st-text: var(--p4-text); }
+
+.pj-progress { display: flex; align-items: center; gap: 10px; }
+.pj-progress .load-bar { flex: 1; margin-top: 0; }
+.pj-progress-value {
+  min-width: 42px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-text);
+  text-align: right;
+}
+
+.pj-line { margin: 0; color: var(--text-dim); font-size: 12.5px; }
+.pj-week { color: var(--text); }
+
+.pj-signals { display: flex; flex-wrap: wrap; gap: 6px; }
+.pj-signals-head { margin: -8px 0 18px; }
+.pj-signals-head:empty { display: none; }
+
+.pj-signal {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.pj-signal.is-danger { color: var(--p1-text); background: var(--p1-soft); }
+.pj-signal.is-warn { color: var(--p2-text); background: var(--p2-soft); }
+
+/* --- Fiche d'un projet : en-tete ------------------------------------------------- */
+
+.pj-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.pj-back { font-size: 13px; }
+
+.pj-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-wrap: anywhere;
+}
+
+.pj-head-dot {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.pj-head-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 6px 0 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.pj-head-meta > span:empty { display: none; }
+.pj-head-deadline { color: var(--text-dim); }
+
+/* --- Fiche d'un projet : corps ----------------------------------------------------- */
+
+.pj-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 18px;
+  align-items: start;
+}
+
+.pj-main .window-title:first-of-type { margin-top: 6px; }
+.pj-task-add { margin-bottom: 14px; }
+.modal-row input[type="color"], .pj-task-add input[type="number"] { width: 90px; }
+.pj-task { margin-bottom: 7px; }
+
+.pj-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  background: color-mix(in srgb, var(--accent-2) 14%, transparent);
+  color: var(--accent-2-text);
+  font-size: 11.5px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.pj-task-progress { display: flex; align-items: center; gap: 8px; margin-top: 5px; max-width: 260px; }
+.pj-task-progress .load-bar { flex: 1; margin-top: 0; height: 4px; }
+.pj-task-progress span { font-family: var(--mono); font-size: 12px; color: var(--accent-text); }
+
+.pj-side { display: flex; flex-direction: column; gap: 12px; }
+
+.pj-comment-add { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.pj-comment-add textarea { width: 100%; resize: vertical; }
+.pj-comment-add .btn-primary { align-self: flex-end; }
+.pj-comment-opts .check-inline { color: var(--text-dim); }
+
+.pj-journal {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.pj-journal-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pj-journal-head .icon-btn { margin-left: auto; padding: 0 6px; }
+.pj-journal-task { color: var(--accent-2-text); font-size: 12px; overflow-wrap: anywhere; }
+.pj-journal-text { margin: 3px 0 0; font-size: 13.5px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.pj-person { margin-bottom: 10px; font-size: 13.5px; }
+.pj-waiting { margin: 4px 0 0 16px; padding: 0; color: var(--text-dim); font-size: 12.5px; }
+.pj-waiting .is-late { color: var(--p1-text); }
+.pj-event { font-size: 13.5px; margin-bottom: 6px; overflow-wrap: anywhere; }
+
+/* ---------- Arborescence des taches (parent > sous-taches) ---------- */
+/* Arborescence des taches (sous-taches, repli) : pages/tasks.css, charge partout. */
+.tree-caret { font-size: 10px; }
+
+/* --- Telephone ----------------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .pj-layout { grid-template-columns: 1fr; }
+
+  /* Cibles tactiles d'au moins 38 px. */
+  .pj-filters .chip { min-height: 38px; padding: 0 13px; }
+  .pj-back,
+  .pj-panel .link { display: inline-flex; align-items: center; min-height: 38px; }
+  .pj-add .check-inline { min-height: 38px; white-space: normal; }
+  .tree-fold { min-height: 32px; padding: 0 12px; }
+
+}
+
+/* --- « Ou en etais-je ? » (static/js/resume.js) ----------------------------- */
+
+.rs-panel { margin-bottom: 18px; }
+.rs-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px; }
+.rs-head .card-title { margin: 0; flex: 1 1 auto; }
+
+.rs-tabs {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-soft);
+}
+
+.rs-tabs button {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color var(--dur) ease, color var(--dur) ease;
+}
+
+.rs-tabs button[aria-selected="true"] { background: var(--surface); color: var(--text-strong); box-shadow: var(--shadow-card); }
+
+.rs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 12px;
+}
+
+.rs-block {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  border: 1px solid var(--line-soft);
+  min-width: 0;
+}
+
+.rs-wide { grid-column: span 2; }
+.rs-accent { border-color: var(--accent-ring); background: var(--accent-soft); }
+
+.rs-label {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.rs-main { margin: 0 0 4px; color: var(--text-strong); font-weight: 550; overflow-wrap: anywhere; }
+.rs-muted { margin: 0; color: var(--text-dim); font-size: 12.5px; }
+.rs-list { margin: 0 0 6px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.rs-list li { font-size: 13px; overflow-wrap: anywhere; }
+.rs-task { text-align: left; }
+
+.rs-ai {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--accent-ring);
+  background: var(--accent-soft);
+}
+
+.rs-ai-text { margin: 0 0 6px; line-height: 1.65; }
+.rs-ai-next { margin: 0 0 6px; }
+
+.rs-ref {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 1px;
+  padding: 0 6px;
+  border: 1px solid var(--accent-ring);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--accent-text);
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 11px;
+  cursor: pointer;
+  vertical-align: 1px;
+}
+
+.rs-ref:hover { background: var(--accent-soft); }
+
+.rs-timeline { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+
+.rs-timeline li {
+  display: grid;
+  grid-template-columns: 64px auto 1fr;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  transition: background-color 0.6s ease;
+}
+
+.rs-timeline li.is-flash { background: var(--accent-soft); }
+.rs-when { font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+.rs-what { min-width: 0; font-size: 13.5px; overflow-wrap: anywhere; }
+
+@media (max-width: 860px) {
+  .rs-wide { grid-column: auto; }
+  .rs-tabs button { min-height: 38px; }
+  .rs-timeline li { grid-template-columns: 1fr; gap: 4px; }
+}
