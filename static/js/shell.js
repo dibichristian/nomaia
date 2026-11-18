@@ -429,6 +429,10 @@
       const { items } = await J.callApi("/api/notifications");
       bellDot.hidden = !items.length;
       bellDot.classList.toggle("is-danger", items.some((item) => item.level === "danger"));
+      document.querySelectorAll(".brand-live").forEach((brand) => {
+        brand.classList.toggle("is-alert", items.length > 0);
+        brand.classList.toggle("is-danger", items.some((item) => item.level === "danger"));
+      });
       bell.setAttribute("aria-label", items.length ? "Notifications (" + items.length + ")" : "Notifications");
       bellList.innerHTML = items.length
         ? items.map((item) => '<li class="is-' + J.escapeHtml(item.level) + '"><a href="' + J.escapeHtml(item.url) + '">' +
@@ -568,6 +572,52 @@
   // Cloche et chronometre suivent les changements ; leurs intervalles restent un filet.
   if (bell) onLiveChange(refreshBell);
   if (pill) onLiveChange(refreshTimer);
+
+  /* ---------- Logo vivant ---------- */
+
+  /* L'anneau du « o » montre l'avancement du jour (/api/day/progress). Il part
+   * de zero et se remplit a la premiere lecture ; il avance, avec un rebond,
+   * des qu'une ecriture de l'interface aboutit (evenement nomaia:write de
+   * J.callApi) et suit aussi les ecritures venues d'ailleurs (rechargement a
+   * chaud). Le point du « i » respire tant qu'une notification attend
+   * (refreshBell). */
+  const brands = document.querySelectorAll(".brand-live");
+  let ringPct = null;
+  let ringTimer = null;
+
+  async function refreshRing() {
+    let pct;
+    try {
+      pct = Number((await J.callApi("/api/day/progress")).pct) || 0;
+    } catch (error) {
+      return; // serveur momentanement injoignable : l'anneau garde sa valeur
+    }
+    const grew = ringPct !== null && pct > ringPct;
+    ringPct = pct;
+    brands.forEach((brand) => {
+      brand.style.setProperty("--p", pct);
+      brand.classList.toggle("is-empty", pct === 0);
+      brand.title = "Journée faite à " + pct + " %";
+      if (grew) {
+        brand.classList.remove("is-bump");
+        void brand.offsetWidth; // relance l'animation si elle tournait encore
+        brand.classList.add("is-bump");
+      }
+    });
+  }
+
+  if (brands.length) {
+    brands.forEach((brand) => brand.addEventListener("animationend", (event) => {
+      if (event.animationName === "anneau-bump") brand.classList.remove("is-bump");
+    }));
+    // Premier remplissage apres le premier rendu, pour que la transition parte de zero.
+    requestAnimationFrame(() => requestAnimationFrame(refreshRing));
+    onLiveChange(refreshRing);
+    document.addEventListener("nomaia:write", () => {
+      clearTimeout(ringTimer);
+      ringTimer = setTimeout(refreshRing, 250);
+    });
+  }
 
   /* Date de l'en-tete : les pages qui la gerent (plan, agenda...) la
    * remplacent ensuite ; les autres gardent celle du jour, au lieu d'un vide. */

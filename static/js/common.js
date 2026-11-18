@@ -19,6 +19,10 @@ window.J = (function () {
     if (!response.ok) {
       throw new Error(data.error || "Erreur serveur.");
     }
+    // Ecriture reussie : la coquille en profite pour remettre a jour ce qui
+    // en depend (anneau d'avancement du logo) sans attendre le sondage.
+    const method = ((options && options.method) || "GET").toUpperCase();
+    if (method !== "GET") document.dispatchEvent(new CustomEvent("nomaia:write", { detail: { url } }));
     return data;
   }
 
