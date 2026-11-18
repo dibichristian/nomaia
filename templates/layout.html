@@ -1,3 +1,4 @@
+{%- from "_logo.html" import brand_logo, brand_ring -%}
 {#- Menu principal, en groupes pour la barre laterale (grand ecran).
     Les pages « primary » forment la bulle du bas sur telephone ; les autres
     passent dans le panneau « Plus ». -#}
@@ -96,9 +97,8 @@
 
   <div class="app">
     <aside class="sidebar" aria-label="Navigation principale">
-      <a class="brand" href="{{ url_for('main.plan') }}">
-        <span class="brand-mark">N</span>
-        <span class="brand-name">NOMAIA</span>
+      <a class="brand brand-live" href="{{ url_for('main.plan') }}" aria-label="NOMAIA, plan du jour">
+        {{ brand_logo("logo-side") }}
       </a>
 
       {% for group in nav_groups %}
@@ -132,9 +132,8 @@
 
     <div class="app-main">
       <header class="topbar">
-        <a class="brand" href="{{ url_for('main.plan') }}" aria-label="NOMAIA, plan du jour">
-          <span class="brand-mark">N</span>
-          <span class="brand-name">NOMAIA</span>
+        <a class="brand brand-live" href="{{ url_for('main.plan') }}" aria-label="NOMAIA, plan du jour">
+          {{ brand_ring("logo-top") }}
         </a>
         <button type="button" class="cmdk-trigger" id="cmdk-open" aria-haspopup="dialog" aria-controls="cmdk">
           {{ nav_icon('search') }}

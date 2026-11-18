@@ -463,3 +463,24 @@ def done_today(day):
             }
         )
     return sorted(result, key=lambda task: task["at"])
+
+
+def day_progress(day=None):
+    """Avancement du jour, affiche par l'anneau du logo.
+
+    Minutes des taches terminees ce jour-la, rapportees a ces minutes plus
+    celles encore planifiees : les deux sont comptees avec la marge du plan,
+    comme la jauge « Planifie » de la page Plan.
+
+    :param day: date examinee (defaut : aujourd'hui)
+    :return: {pct (0-100), done_min, planned_min}
+    """
+    day = day or date.today()
+    done_min = sum(padded_duration(task) for task in task_model.list_done_on(day.isoformat()))
+    planned_min = build_plan(day)["planned_min"]
+    total = done_min + planned_min
+    return {
+        "pct": round(done_min / total * 100) if total else 0,
+        "done_min": done_min,
+        "planned_min": planned_min,
+    }

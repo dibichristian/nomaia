@@ -63,6 +63,12 @@ def get_plan():
     return jsonify(_in_scope(plan))
 
 
+
+@api_plan_bp.get("/day/progress")
+def get_day_progress():
+    """Avancement du jour en pourcentage : l'anneau du logo, dans la barre laterale."""
+    return jsonify(planner.day_progress())
+
 def _masked_label(value):
     """Libelle d'un creneau de l'autre espace : le temps est pris, le detail cache."""
     return "Occupé · " + space_model.LABELS.get(value, value)

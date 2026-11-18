@@ -51,6 +51,7 @@
 
   /* Priorites et etats : --pX pour les traits et pastilles, --pX-text pour le texte */
   --p1: #f43f5e;  --p1-text: #fb7185;  --p1-soft: rgba(244, 63, 94, 0.13);
+  --logo-track: #334155;
   --p2: #fb923c;  --p2-text: #fdba74;  --p2-soft: rgba(251, 146, 60, 0.13);
   --p3: #38bdf8;  --p3-text: #7dd3fc;  --p3-soft: rgba(56, 189, 248, 0.13);
   --p4: #64748b;  --p4-text: #9fb3c8;  --p4-soft: rgba(100, 116, 139, 0.16);
@@ -104,6 +105,7 @@
   --accent-glow: rgba(8, 145, 178, 0.18);
 
   --p1: #e11d48;  --p1-text: #be123c;  --p1-soft: rgba(225, 29, 72, 0.09);
+  --logo-track: #e2e8f0;
   --p2: #ea580c;  --p2-text: #c2410c;  --p2-soft: rgba(234, 88, 12, 0.10);
   --p3: #0284c7;  --p3-text: #0369a1;  --p3-soft: rgba(2, 132, 199, 0.10);
   --p4: #94a3b8;  --p4-text: #4a5d73;  --p4-soft: rgba(100, 116, 139, 0.10);

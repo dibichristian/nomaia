@@ -1,3 +1,4 @@
+{%- from "_logo.html" import brand_logo -%}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -16,7 +17,7 @@
 
   <main class="container">
     <section class="access-box">
-      <span class="brand-mark">N</span>
+      <div class="access-logo">{{ brand_logo("logo-access", full=True) }}</div>
       <h1>Accès refusé</h1>
       <p>Cette page ne s'ouvre pas directement : elle demande une clé d'accès
          que seul ton compte Windows possède.</p>
