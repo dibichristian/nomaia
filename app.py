@@ -26,6 +26,7 @@ from controllers.api_task import api_task_bp
 from controllers.main import main_bp
 from controllers.security import attach_cookie, check_request_origin
 from models import backup_db, close_db, init_schema, setting, vacuum
+from services.extensions import load_extensions
 from services.heartbeat import Heartbeat
 from services.telegram import TelegramBridge
 from services.worker import TriageWorker
@@ -148,6 +149,10 @@ def create_app(start_worker=True):
     app.register_blueprint(api_review_bp)
     app.register_blueprint(api_search_bp)
     app.register_blueprint(api_settings_bp)
+
+    # Extension locale facultative (paquet perso/) : apres les routes du
+    # coeur, avant le demarrage des threads.
+    load_extensions(app)
 
     # La passerelle est enregistree avant le worker : celui-ci lui renvoie
     # le resultat de chaque triage issu du telephone.
