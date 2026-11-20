@@ -50,6 +50,15 @@ for paquet in (
     binaires += paquet_binaires
     imports_caches += paquet_imports
 
+# Extension locale facultative (services/extensions.py) : importee
+# dynamiquement, donc invisible a l'analyse. Embarquee si elle existe, avec
+# ses gabarits et fichiers statiques.
+if (Path.cwd() / "perso" / "__init__.py").is_file():
+    paquet_donnees, paquet_binaires, paquet_imports = collect_all("perso")
+    donnees += paquet_donnees
+    binaires += paquet_binaires
+    imports_caches += ["perso"] + paquet_imports
+
 analyse = Analysis(
     ["tray.py"],
     pathex=[str(Path.cwd())],
