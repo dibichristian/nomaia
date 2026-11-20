@@ -114,7 +114,7 @@ def create_app(start_worker=True):
 
     @app.context_processor
     def shell_context():
-        """Nom affiche en bas de la barre laterale, et ses initiales."""
+        """Nom affiche en bas de la barre laterale, ses initiales, l'espace et ses couleurs."""
         name = (setting.get("display_name") or "").strip() or "NOMAIA"
         initials = "".join(word[0] for word in name.split()[:2]).upper()
         return {
@@ -122,6 +122,7 @@ def create_app(start_worker=True):
             "display_initials": initials,
             "space_filter": setting.space_filter() or "all",
             "create_space": setting.create_space(),
+            "space_colors": setting.space_colors(),
         }
 
     # Controle d'acces et garde-fou CSRF, avant toute route.

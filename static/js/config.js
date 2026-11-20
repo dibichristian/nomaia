@@ -204,6 +204,7 @@ function fillForm() {
 
   fillWorkDays(s.work_days);
   fillHolidayCountries(s.holiday_country);
+  fillSpaceColors(s);
 
   const telegram = state.status.telegram || {};
   document.getElementById("tg-state").textContent = telegram.ok
@@ -218,6 +219,56 @@ function fillForm() {
     : "absent";
   document.getElementById("cf-tg-key-state").classList.toggle("ok", Boolean(jeton.defined));
 }
+
+/* ---------- Couleurs des espaces ---------- */
+
+/* Couleurs d'origine, identiques aux defauts de models/setting.py et shell.css. */
+const SPACE_COLOR_DEFAULTS = {
+  pro: { from: "#6366f1", to: "#22d3ee" },
+  perso: { from: "#f59e0b", to: "#ec4899" },
+};
+
+function spaceColorInput(space, edge) {
+  return document.getElementById(`cf-space-${space}-${edge}`);
+}
+
+/* Apercu du degrade d'un espace, d'apres les deux champs couleur. */
+function renderSpacePreview(space) {
+  const debut = spaceColorInput(space, "from").value;
+  const fin = spaceColorInput(space, "to").value;
+  document.getElementById(`cf-space-${space}-preview`).style.background =
+    `linear-gradient(90deg, ${debut}, ${fin})`;
+}
+
+function fillSpaceColors(s) {
+  for (const space of Object.keys(SPACE_COLOR_DEFAULTS)) {
+    for (const edge of ["from", "to"]) {
+      spaceColorInput(space, edge).value =
+        s[`space_${space}_color_${edge}`] || SPACE_COLOR_DEFAULTS[space][edge];
+    }
+    renderSpacePreview(space);
+  }
+}
+
+document.querySelectorAll("[data-space-colors]").forEach((row) => {
+  row.addEventListener("input", () => renderSpacePreview(row.dataset.spaceColors));
+});
+
+/* Applique les couleurs enregistrees a la page ouverte, sans rechargement :
+   meme variables que la balise <style> de layout.html. */
+function applySpaceColors() {
+  const root = document.documentElement.style;
+  for (const space of Object.keys(SPACE_COLOR_DEFAULTS)) {
+    for (const edge of ["from", "to"]) {
+      root.setProperty(`--space-${space}-${edge}`, state.settings[`space_${space}_color_${edge}`]);
+    }
+  }
+}
+
+/* Remet les champs aux couleurs d'origine ; l'enregistrement reste explicite. */
+document.getElementById("cf-space-reset").addEventListener("click", () => {
+  fillSpaceColors({});
+});
 
 /* ---------- Jours travailles et feries ---------- */
 
@@ -785,6 +836,12 @@ const GROUPS = {
   mail: () => ({
     mail_enabled: document.getElementById("cf-mail-enabled").value,
   }),
+  espaces: () => ({
+    space_pro_color_from: spaceColorInput("pro", "from").value,
+    space_pro_color_to: spaceColorInput("pro", "to").value,
+    space_perso_color_from: spaceColorInput("perso", "from").value,
+    space_perso_color_to: spaceColorInput("perso", "to").value,
+  }),
 };
 
 document.addEventListener("click", async (event) => {
@@ -807,6 +864,7 @@ document.addEventListener("click", async (event) => {
     await reload();
     if (bouton.dataset.save === "odoo") loadSources();
     if (bouton.dataset.save === "mail") loadMail();
+    if (bouton.dataset.save === "espaces") applySpaceColors();
     toast("Configuration enregistrée.");
   } catch (error) {
     toast(error.message, true);

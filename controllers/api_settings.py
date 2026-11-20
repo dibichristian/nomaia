@@ -82,6 +82,10 @@ EDITABLE = {
     "perso_end": {"type": "time"},
     "perso_offday_start": {"type": "time"},
     "perso_offday_end": {"type": "time"},
+    "space_pro_color_from": {"type": "color"},
+    "space_pro_color_to": {"type": "color"},
+    "space_perso_color_from": {"type": "color"},
+    "space_perso_color_to": {"type": "color"},
 }
 
 SECRET_FIELDS = tuple(key for key, regle in EDITABLE.items() if regle["type"] == "secret")
@@ -131,6 +135,14 @@ def _validate(key, value):
         except ValueError:
             raise SettingError(f"{key} attend une heure au format HH:MM.")
         return value
+
+    if regle["type"] == "color":
+        # Injectee dans une balise <style> : seul #rrggbb passe. La casse est
+        # ramenee en minuscules (format renvoye par <input type="color">).
+        couleur = value.strip().lower() if isinstance(value, str) else ""
+        if not setting.is_space_color(couleur):
+            raise SettingError(f"{key} attend une couleur au format #rrggbb.")
+        return couleur
 
     texte = str(value or "").strip()
     if regle["type"] == "secret":
@@ -261,6 +273,10 @@ def issue_pairing_code():
 def get_settings():
     """Retourne la configuration courante, secrets masques."""
     valeurs = {key: setting.get(key) for key in EDITABLE if key not in SECRET_FIELDS}
+    # Couleurs d'espace : meme repli que la page (valeur hors format -> defaut).
+    couleurs = setting.space_colors()
+    for variable, key in setting.SPACE_COLOR_SETTINGS.items():
+        valeurs[key] = couleurs[variable]
 
     secrets_definis = {}
     for key in SECRET_FIELDS:

@@ -61,8 +61,8 @@ class CoquilleTest(NomaiaTestCase):
         for section in sections:
             self.assertIn(f'href="#{section}" data-group="{section}"', html)
             self.assertIn(f'id="cfg-{section}"', html)
-        # Les dix-sept cartes restent, chacune dans une section.
-        self.assertEqual(html.count('class="card config-card"'), 17)
+        # Les dix-huit cartes restent, chacune dans une section.
+        self.assertEqual(html.count('class="card config-card"'), 18)
         self.assertEqual(html.count('class="cfg-group"'), len(sections))
 
     def test_statut_compte_les_entrees_a_traiter(self):
