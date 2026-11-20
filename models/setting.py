@@ -3,6 +3,7 @@
 Les reglages listes dans SECRET_KEYS sont chiffres au repos (voir models.secret)
 et ne doivent etre lus que par get_secret().
 """
+import re
 import secrets as secrets_module
 from datetime import datetime, timedelta
 
@@ -39,6 +40,13 @@ DEFAULTS = {
     "space_filter": "all",
     # Espace des nouveaux elements quand le selecteur est sur « Tout ».
     "create_space": "pro",
+    # Couleurs de chaque espace (debut et fin du degrade), injectees dans
+    # layout.html en variables CSS --space-<espace>-from / -to. Memes valeurs
+    # que les defauts declares dans static/css/shell.css.
+    "space_pro_color_from": "#6366f1",
+    "space_pro_color_to": "#22d3ee",
+    "space_perso_color_from": "#f59e0b",
+    "space_perso_color_to": "#ec4899",
     # Horaires propres a l'espace perso (services/planner.py) : coupes par
     # defaut, les deux espaces partagent alors les horaires de travail.
     "perso_hours_enabled": "0",
@@ -254,6 +262,39 @@ def create_space():
     """Espace des elements crees quand le selecteur montre les deux espaces."""
     valeur = get("create_space")
     return valeur if valeur in ("pro", "perso") else "pro"
+
+
+# Couleur d'espace acceptee : #rrggbb strict. La valeur finit dans une balise
+# <style> : tout autre format est refuse plutot qu'echappe.
+SPACE_COLOR_PATTERN = re.compile(r"^#[0-9a-f]{6}$")
+
+# Variable CSS -> reglage portant la couleur.
+SPACE_COLOR_SETTINGS = {
+    "--space-pro-from": "space_pro_color_from",
+    "--space-pro-to": "space_pro_color_to",
+    "--space-perso-from": "space_perso_color_from",
+    "--space-perso-to": "space_perso_color_to",
+}
+
+
+def is_space_color(value):
+    """Indique si une valeur est une couleur #rrggbb (minuscules)."""
+    return isinstance(value, str) and bool(SPACE_COLOR_PATTERN.fullmatch(value))
+
+
+def space_colors():
+    """Couleurs des espaces, par variable CSS (--space-pro-from, ...).
+
+    Une valeur en base hors format (base modifiee a la main) retombe sur son
+    defaut : rien d'autre qu'un #rrggbb n'atteint la balise <style>.
+
+    :return: dict variable CSS -> couleur #rrggbb
+    """
+    couleurs = {}
+    for variable, key in SPACE_COLOR_SETTINGS.items():
+        valeur = get(key)
+        couleurs[variable] = valeur if is_space_color(valeur) else DEFAULTS[key]
+    return couleurs
 
 
 def resolve_space(raw):

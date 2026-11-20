@@ -91,6 +91,9 @@
   {% endfor %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/motion.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" media="print">
+  {#- Couleurs des espaces reglees en Configuration, apres shell.css qui porte
+      les defauts. Valeurs deja validees en #rrggbb (setting.space_colors). -#}
+  <style>:root{ {%- for variable, color in space_colors.items() -%}{{ variable }}:{{ color }};{%- endfor -%} }</style>
 </head>
 <body>
   <div class="aurora" aria-hidden="true"><div class="aurora-layer"></div></div>

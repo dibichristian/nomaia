@@ -185,6 +185,16 @@
 
 .config-help code { font-family: var(--mono); font-size: 11.5px; color: var(--text); }
 
+/* Couleurs d'un espace : deux pastilles et l'apercu du degrade. */
+.space-colors { align-items: end; }
+.space-colors input[type="color"] { width: 100%; }
+.space-preview {
+  align-self: end;
+  min-height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
+
 .config-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 
 /* Etat d'une cle enregistree, a cote du libelle du champ. */

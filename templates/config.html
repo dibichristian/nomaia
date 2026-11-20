@@ -49,6 +49,29 @@
         </article>
 
         <article class="card config-card">
+          <h2 class="card-title">Espaces</h2>
+          <p class="config-help">Couleurs de chaque espace (début et fin du dégradé), reprises par l'anneau
+             du logo. Réglage global : le PC et le téléphone affichent les mêmes.</p>
+          {% for space, label in (("pro", "Pro"), ("perso", "Perso")) %}
+          <div class="modal-row space-colors" data-space-colors="{{ space }}">
+            <div>
+              <label for="cf-space-{{ space }}-from">{{ label }} : début</label>
+              <input type="color" id="cf-space-{{ space }}-from">
+            </div>
+            <div>
+              <label for="cf-space-{{ space }}-to">{{ label }} : fin</label>
+              <input type="color" id="cf-space-{{ space }}-to">
+            </div>
+            <div class="space-preview" id="cf-space-{{ space }}-preview" aria-hidden="true"></div>
+          </div>
+          {% endfor %}
+          <div class="config-actions">
+            <button type="button" class="btn-ghost" id="cf-space-reset">Couleurs par défaut</button>
+            <button type="button" class="btn-primary" data-save="espaces">Enregistrer</button>
+          </div>
+        </article>
+
+        <article class="card config-card">
           <h2 class="card-title">Système</h2>
           <dl class="config-facts" id="system-facts"></dl>
         </article>
