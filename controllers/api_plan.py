@@ -66,8 +66,13 @@ def get_plan():
 
 @api_plan_bp.get("/day/progress")
 def get_day_progress():
-    """Avancement du jour en pourcentage : l'anneau du logo, dans la barre laterale."""
-    return jsonify(planner.day_progress())
+    """Avancement d'un jour (?date=, defaut aujourd'hui) dans l'espace affiche : l'anneau du logo."""
+    raw_day = request.args.get("date")
+    try:
+        day = datetime.strptime(raw_day, "%Y-%m-%d").date() if raw_day else None
+    except ValueError:
+        return jsonify({"error": "Date attendue au format AAAA-MM-JJ."}), 400
+    return jsonify(planner.day_progress(day, space_model.scope()))
 
 def _masked_label(value):
     """Libelle d'un creneau de l'autre espace : le temps est pris, le detail cache."""

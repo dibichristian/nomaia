@@ -6,6 +6,7 @@ taches ouvertes. Une tache cochee disparait du plan, le reste remonte.
 from datetime import date, datetime, timedelta
 
 from models import event as event_model
+from models import plan_day as plan_day_model
 from models import session as session_model
 from models import setting
 from models import space as space_model
@@ -465,22 +466,89 @@ def done_today(day):
     return sorted(result, key=lambda task: task["at"])
 
 
-def day_progress(day=None):
-    """Avancement du jour, affiche par l'anneau du logo.
+def minutes_by_space(tasks):
+    """Duree reservee (marge comprise) de taches, repartie par espace.
+
+    :param tasks: taches (dictionnaires portant 'space')
+    :return: {'pro': minutes, 'perso': minutes}
+    """
+    result = dict.fromkeys(space_model.SPACES, 0)
+    for task in tasks:
+        if task.get("space") in result:
+            result[task["space"]] += padded_duration(task)
+    return result
+
+
+def planned_by_space(plan):
+    """Minutes planifiees d'un plan (retour de build_plan), reparties par espace.
+
+    :return: {'pro': minutes, 'perso': minutes}
+    """
+    result = dict.fromkeys(space_model.SPACES, 0)
+    for slot in plan.get("slots", []):
+        space = (slot.get("task") or {}).get("space")
+        if space in result:
+            result[space] += slot["duration_min"]
+    return result
+
+
+def day_progress(day=None, space=None):
+    """Avancement d'un jour, affiche par l'anneau du logo.
 
     Minutes des taches terminees ce jour-la, rapportees a ces minutes plus
     celles encore planifiees : les deux sont comptees avec la marge du plan,
-    comme la jauge « Planifie » de la page Plan.
+    comme la jauge « Planifie » de la page Plan. Un jour passe n'est pas
+    replanifie : on le rapporte a la charge notee ce jour-la (models.plan_day).
 
     :param day: date examinee (defaut : aujourd'hui)
-    :return: {pct (0-100), done_min, planned_min}
+    :param space: 'pro', 'perso', ou None pour les deux espaces
+    :return: {date, space, pct (0-100, None si aucun plan n'a ete note ce
+        jour passe), done_min, planned_min (minutes encore planifiees),
+        by_space (False si le jour passe n'a que son total note : le
+        chiffre porte alors sur les deux espaces)}
     """
-    day = day or date.today()
-    done_min = sum(padded_duration(task) for task in task_model.list_done_on(day.isoformat()))
-    planned_min = build_plan(day)["planned_min"]
+    today = date.today()
+    day = day or today
+    done = task_model.list_done_on(day.isoformat())
+    result = {"date": day.isoformat(), "space": space, "by_space": True}
+    if day < today:
+        result.update(_past_progress(day, space, done))
+        return result
+
+    plan = build_plan(day)
+    if space is None:
+        done_min, planned_min = sum(padded_duration(task) for task in done), plan["planned_min"]
+    else:
+        done_min, planned_min = minutes_by_space(done)[space], planned_by_space(plan)[space]
     total = done_min + planned_min
+    result.update(pct=round(done_min / total * 100) if total else 0, done_min=done_min, planned_min=planned_min)
+    return result
+
+
+def _past_progress(day, space, done):
+    """Avancement d'un jour passe : fait / charge notee ce jour-la.
+
+    La charge notee comprend deja les taches bouclees au moment de la trace ;
+    celles bouclees ensuite (ou hors plan) l'augmentent d'autant, pour ne
+    jamais depasser 100 %.
+
+    :return: {pct, done_min, planned_min, by_space}
+    """
+    key = day.isoformat()
+    record = plan_day_model.between(key, key).get(key)
+    detail = record.get(f"planned_{space}_min") if record and space else None
+    by_space = space is not None and detail is not None
+    if by_space:
+        done_min, planned = minutes_by_space(done)[space], detail
+    else:
+        done_min = sum(padded_duration(task) for task in done)
+        planned = record["planned_min"] if record else None
+    if planned is None:
+        return {"pct": None, "done_min": done_min, "planned_min": None, "by_space": by_space or space is None}
+    total = max(planned, done_min)
     return {
         "pct": round(done_min / total * 100) if total else 0,
         "done_min": done_min,
-        "planned_min": planned_min,
+        "planned_min": total - done_min,
+        "by_space": by_space or space is None,
     }

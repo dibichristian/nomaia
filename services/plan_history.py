@@ -59,7 +59,10 @@ def record_today(plan, done_tasks):
     done_min = sum(planner.padded_duration(task) for task in done_tasks)
     if plan.get("day_off") and not done_min:
         return
-    plan_day_model.record(plan["date"], plan["planned_min"] + done_min, plan["capacity_min"])
+    # Meme calcul par espace : l'anneau du logo relit un jour passe espace par espace.
+    planned, done = planner.planned_by_space(plan), planner.minutes_by_space(done_tasks)
+    by_space = {space: planned[space] + done[space] for space in planned}
+    plan_day_model.record(plan["date"], plan["planned_min"] + done_min, plan["capacity_min"], by_space)
 
 
 def history(start, end, today=None):

@@ -138,6 +138,13 @@ a { color: var(--accent-text); }
   stroke-dasharray: var(--p, 72) 100;
   transition: stroke-dasharray 0.6s var(--ease-out), opacity 0.2s;
 }
+/* Degrade de l'anneau selon l'espace affiche (data-space pose par shell.js) ;
+   en mode Tout, celui du logo. Couleurs reglables (variables ci-dessous). */
+:root { --space-pro-from: #6366f1; --space-pro-to: #22d3ee; --space-perso-from: #f59e0b; --space-perso-to: #ec4899; }
+.brand-live[data-space="pro"] stop:first-child { stop-color: var(--space-pro-from); }
+.brand-live[data-space="pro"] stop:last-child { stop-color: var(--space-pro-to); }
+.brand-live[data-space="perso"] stop:first-child { stop-color: var(--space-perso-from); }
+.brand-live[data-space="perso"] stop:last-child { stop-color: var(--space-perso-to); }
 /* Barre laterale : l'anneau part de zero et se remplit a la premiere lecture. */
 .brand-live { --p: 0; }
 .brand-live.is-empty .logo-ring { opacity: 0; }

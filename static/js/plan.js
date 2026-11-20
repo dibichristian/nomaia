@@ -448,6 +448,8 @@ async function reload(animate) {
   rowIndex = 0;
   // Changement de jour (animate) : la note du soir precedent suit le jour affiche.
   if (animateRows) loadMorningNote();
+  // L'anneau du logo (shell.js) suit le jour affiche.
+  document.dispatchEvent(new CustomEvent("nomaia:plan-day", { detail: { date: currentDate } }));
   try {
     // Le chronometre est lu avant le rendu : la ligne en cours porte l'etiquette « En cours ».
     const [plan, timer] = await Promise.all([
@@ -617,7 +619,8 @@ function openDetail(taskId) {
 function shiftDate(days) {
   const day = new Date(currentDate + "T00:00:00");
   day.setDate(day.getDate() + days);
-  currentDate = day.toISOString().slice(0, 10);
+  // Date locale : toISOString (UTC) decalerait d'un jour en fuseau UTC+.
+  currentDate = day.getFullYear() + "-" + String(day.getMonth() + 1).padStart(2, "0") + "-" + String(day.getDate()).padStart(2, "0");
   reload(true);
 }
 

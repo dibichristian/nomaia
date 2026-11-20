@@ -511,6 +511,10 @@ MIGRATIONS = (
     ("person", "space", "TEXT NOT NULL DEFAULT 'pro'"),
     ("kb_note", "space", "TEXT NOT NULL DEFAULT 'pro'"),
     ("review", "space", "TEXT NOT NULL DEFAULT 'all'"),
+    # Charge planifiee par espace (anneau du logo sur un jour passe). NULL pour
+    # les jours notes avant : seul le total est alors connu.
+    ("plan_day", "planned_pro_min", "INTEGER"),
+    ("plan_day", "planned_perso_min", "INTEGER"),
 )
 
 # Reprise des donnees au moment ou la colonne space apparait (une seule fois :
