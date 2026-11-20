@@ -64,6 +64,18 @@ class HistoriquePlanTest(NomaiaTestCase):
         record = plan_day_model.between(self.today.isoformat(), self.today.isoformat())
         self.assertEqual(record[self.today.isoformat()]["planned_min"], 90)
 
+    def test_record_planifie_par_espace(self):
+        self._task("Pro ouverte", estimate_min=90)
+        perso_id = self._task("Perso bouclee", estimate_min=30, done_at=f"{self.today.isoformat()} 08:30:00")
+        db = get_db()
+        db.execute("UPDATE task SET space = 'perso' WHERE id = ?", (perso_id,))
+        db.commit()
+        self.client().get("/api/plan")
+        record = plan_day_model.between(self.today.isoformat(), self.today.isoformat())[self.today.isoformat()]
+        self.assertEqual(record["planned_min"], 120)
+        self.assertEqual(record["planned_pro_min"], 90)
+        self.assertEqual(record["planned_perso_min"], 30)
+
     def test_suivi_regroupe_par_jour(self):
         yesterday = self.today - timedelta(days=1)
         task_id = self._task("Suivie")

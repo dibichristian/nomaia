@@ -575,29 +575,50 @@
 
   /* ---------- Logo vivant ---------- */
 
-  /* L'anneau du « o » montre l'avancement du jour (/api/day/progress). Il part
-   * de zero et se remplit a la premiere lecture ; il avance, avec un rebond,
-   * des qu'une ecriture de l'interface aboutit (evenement nomaia:write de
-   * J.callApi) et suit aussi les ecritures venues d'ailleurs (rechargement a
-   * chaud). Le point du « i » respire tant qu'une notification attend
-   * (refreshBell). */
+  /* L'anneau du « o » montre l'avancement du jour (/api/day/progress), dans
+   * l'espace affiche (Tout / Pro / Perso : chiffre et degrade de l'espace).
+   * Sur la page Plan, il suit le jour affiche (evenement nomaia:plan-day de
+   * plan.js) : on y relit la progression d'hier. Il part de zero et se
+   * remplit a la premiere lecture ; il avance, avec un rebond, des qu'une
+   * ecriture de l'interface aboutit (evenement nomaia:write de J.callApi) et
+   * suit aussi les ecritures venues d'ailleurs (rechargement a chaud). Le
+   * point du « i » respire tant qu'une notification attend (refreshBell). */
   const brands = document.querySelectorAll(".brand-live");
+  const SPACE_NAMES = { pro: "Pro", perso: "Perso" };
   let ringPct = null;
+  let ringDay = null; // null : aujourd'hui
   let ringTimer = null;
+  let ringSeq = 0; // numero de la derniere lecture : une reponse en retard est ignoree
+
+  function ringTitle(data) {
+    const prefix = data.space && data.by_space ? SPACE_NAMES[data.space] + " — " : "";
+    const day = ringDay
+      ? new Date(data.date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" })
+      : "";
+    if (data.pct === null) return (day || "Ce jour") + " : pas de plan noté";
+    const scope = data.space && !data.by_space ? " (tous espaces, détail non noté)" : "";
+    return prefix + (day ? day + " : journée faite à " : "Journée faite à ") + data.pct + " %" + scope;
+  }
 
   async function refreshRing() {
-    let pct;
+    const day = ringDay;
+    const seq = ++ringSeq;
+    let data;
     try {
-      pct = Number((await J.callApi("/api/day/progress")).pct) || 0;
+      data = await J.callApi("/api/day/progress" + (day ? "?date=" + encodeURIComponent(day) : ""));
     } catch (error) {
       return; // serveur momentanement injoignable : l'anneau garde sa valeur
     }
+    if (seq !== ringSeq) return; // une lecture plus recente est partie : elle fait foi
+    const pct = Number(data.pct) || 0;
     const grew = ringPct !== null && pct > ringPct;
     ringPct = pct;
     brands.forEach((brand) => {
       brand.style.setProperty("--p", pct);
       brand.classList.toggle("is-empty", pct === 0);
-      brand.title = "Journée faite à " + pct + " %";
+      if (data.space) brand.dataset.space = data.space;
+      else delete brand.dataset.space;
+      brand.title = ringTitle(data);
       if (grew) {
         brand.classList.remove("is-bump");
         void brand.offsetWidth; // relance l'animation si elle tournait encore
@@ -616,6 +637,14 @@
     document.addEventListener("nomaia:write", () => {
       clearTimeout(ringTimer);
       ringTimer = setTimeout(refreshRing, 250);
+    });
+    document.addEventListener("nomaia:plan-day", (event) => {
+      const today = document.getElementById("header-date")?.dataset.today;
+      const day = event.detail && event.detail.date !== today ? event.detail.date : null;
+      if (day === ringDay) return;
+      ringDay = day;
+      ringPct = null; // autre jour : pas de rebond, l'anneau glisse vers sa valeur
+      refreshRing();
     });
   }
 
