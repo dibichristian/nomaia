@@ -481,7 +481,7 @@ a { color: var(--accent-text); }
 
 .nav-sheet-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -533,8 +533,19 @@ a { color: var(--accent-text); }
 
   .topbar .brand { display: flex; padding: 0; }
   .topbar .brand-name { display: none; }
-  .cmdk-trigger { flex: 1 1 auto; }
+  /* Aucun element de l'en-tete ne doit imposer sa largeur : sans min-width: 0,
+     le libelle de recherche passait sur trois lignes et le bloc de droite
+     poussait la page au-dela de l'ecran (defilement horizontal). */
+  .cmdk-trigger { flex: 1 1 auto; min-width: 0; }
+  .cmdk-trigger span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cmdk-trigger kbd, .engine, .chrono-title { display: none; }
+  .topbar-right { min-width: 0; gap: 6px; }
+
+  /* Selecteur d'espace compact ; s'il manque encore de place, il defile
+     sur lui-meme au lieu d'elargir la page. */
+  .space-switch { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .space-switch .chip, .space-create { flex: none; }
+  .space-switch .chip { padding: 3px 8px; }
 
   .container { padding: 18px 14px calc(112px + env(safe-area-inset-bottom)); }
 
@@ -581,6 +592,21 @@ a { color: var(--accent-text); }
   }
 
   .page-title { font-size: 22px; }
+}
+
+/* Telephone etroit : la recherche se reduit a sa loupe. Le libelle reste
+   lu par les lecteurs d'ecran (nom accessible du bouton). */
+@media (max-width: 560px) {
+  .topbar { gap: 8px; padding-left: 10px; padding-right: 10px; }
+  .cmdk-trigger { flex: 0 0 40px; justify-content: center; padding: 0; }
+  .cmdk-trigger span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
 }
 
 /* --- Page d'acces refuse (hors gabarit) ------------------------------------- */
